@@ -32,21 +32,42 @@ export default function ProductCard({ product }: ProductCardProps) {
       >
         <Link to={`/products/${product.attributes.slug}`} className="block">
           <div className="relative aspect-[3/4] overflow-hidden rounded-lg bg-secondary mb-4">
+            {/* Pulse Badge */}
+            <motion.div
+              animate={{
+                scale: [1, 1.1, 1],
+                opacity: [0.7, 1, 0.7],
+              }}
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+                ease: "easeInOut",
+              }}
+              className="absolute top-3 right-3 z-10 bg-primary text-primary-foreground px-3 py-1 rounded-full text-xs font-bold shadow-lg"
+            >
+              {t('product.new', 'جديد')}
+            </motion.div>
+
             {/* Images */}
-            <img
+            <motion.img
               src={mainImage}
               alt={product.attributes.name}
               className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${
                 isHovered && hoverImage ? 'opacity-0' : 'opacity-100'
               }`}
+              whileHover={{ scale: 1.05 }}
+              transition={{ duration: 0.4 }}
             />
             {hoverImage && (
-              <img
+              <motion.img
                 src={hoverImage}
                 alt={product.attributes.name}
                 className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 ${
                   isHovered ? 'opacity-100' : 'opacity-0'
                 }`}
+                initial={{ scale: 1.05 }}
+                animate={{ scale: isHovered ? 1 : 1.05 }}
+                transition={{ duration: 0.4 }}
               />
             )}
 
@@ -55,46 +76,62 @@ export default function ProductCard({ product }: ProductCardProps) {
               initial={{ opacity: 0 }}
               animate={{ opacity: isHovered ? 1 : 0 }}
               transition={{ duration: 0.3 }}
-              className="absolute inset-0 bg-black/40 flex items-center justify-center gap-3"
+              className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex items-center justify-center gap-3"
             >
-              <Button
-                size="icon"
-                variant="secondary"
-                className="rounded-full"
-                onClick={(e) => {
-                  e.preventDefault();
-                  setShowQuickView(true);
-                }}
+              <motion.div
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: isHovered ? 0 : 20, opacity: isHovered ? 1 : 0 }}
+                transition={{ delay: 0.1 }}
               >
-                <Eye className="h-4 w-4" />
-              </Button>
-              <Button
-                size="icon"
-                variant="secondary"
-                className="rounded-full"
-                asChild
+                <Button
+                  size="icon"
+                  variant="secondary"
+                  className="rounded-full shadow-lg"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    setShowQuickView(true);
+                  }}
+                >
+                  <Eye className="h-4 w-4" />
+                </Button>
+              </motion.div>
+              <motion.div
+                initial={{ y: 20, opacity: 0 }}
+                animate={{ y: isHovered ? 0 : 20, opacity: isHovered ? 1 : 0 }}
+                transition={{ delay: 0.15 }}
               >
-                <Link to={`/products/${product.attributes.slug}`}>
-                  <ArrowRight className="h-4 w-4" />
-                </Link>
-              </Button>
+                <Button
+                  size="icon"
+                  variant="secondary"
+                  className="rounded-full shadow-lg"
+                  asChild
+                >
+                  <Link to={`/products/${product.attributes.slug}`}>
+                    <ArrowRight className="h-4 w-4" />
+                  </Link>
+                </Button>
+              </motion.div>
             </motion.div>
           </div>
 
           {/* Product Info */}
-          <div className="space-y-1">
+          <motion.div
+            className="space-y-1"
+            initial={{ opacity: 0.8 }}
+            whileHover={{ opacity: 1 }}
+          >
             {category && (
-              <p className="text-xs text-muted-foreground uppercase tracking-wider">
+              <p className="text-xs text-primary uppercase tracking-wider font-semibold">
                 {category}
               </p>
             )}
             <h3 className="font-semibold text-sm md:text-base line-clamp-1">
               {product.attributes.name}
             </h3>
-            <p className="text-sm md:text-base font-bold">
+            <p className="text-sm md:text-base font-bold text-foreground">
               {product.attributes.price} {t('product.price')}
             </p>
-          </div>
+          </motion.div>
         </Link>
       </motion.div>
 

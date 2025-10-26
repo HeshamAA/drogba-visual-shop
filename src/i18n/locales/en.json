@@ -12,9 +12,28 @@
   "sections": {
     "featured": "Best Sellers",
     "categories": "Shop by Category",
+    "categoriesDesc": "Discover our diverse collection",
     "lookbook": "Shop the Look",
     "values": "Why Drogba?",
-    "community": "Join the #Drogba Family"
+    "community": "Join the #Drogba Family",
+    "communityDesc": "Share your style with us on Instagram",
+    "newArrivals": "New Arrivals",
+    "newArrivalsDesc": "Our latest exclusive releases",
+    "aboutUs": "About Us",
+    "brandStoryTitle": "The Drogba Story",
+    "brandStory1": "Drogba is more than just a clothing brand - it's a movement. Born from the streets of Cairo, we blend urban style with premium quality.",
+    "brandStory2": "Every piece we design tells a story, reflecting the spirit and ambitions of Arab youth. We believe fashion is a form of self-expression."
+  },
+  "common": {
+    "shopNow": "Shop Now",
+    "viewAll": "View All"
+  },
+  "newsletter": {
+    "title": "Get 10% Off",
+    "description": "Subscribe to our newsletter and get 10% off your first order",
+    "placeholder": "Enter your email",
+    "subscribe": "Subscribe",
+    "success": "Successfully subscribed!"
   },
   "product": {
     "price": "EGP",
@@ -26,7 +45,8 @@
     "description": "Description",
     "sizingChart": "Sizing Chart",
     "shipping": "Shipping & Returns",
-    "outOfStock": "Out of Stock"
+    "outOfStock": "Out of Stock",
+    "new": "New"
   },
   "cart": {
     "title": "Cart",
