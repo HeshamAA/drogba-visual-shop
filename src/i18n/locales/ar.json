@@ -1,0 +1,74 @@
+{
+  "nav": {
+    "home": "الرئيسية",
+    "shop": "المتجر",
+    "about": "من نحن",
+    "contact": "تواصل معنا"
+  },
+  "hero": {
+    "headline": "أسلوبك. هويتك. دروجبا.",
+    "cta": "تسوق الآن"
+  },
+  "sections": {
+    "featured": "الأكثر مبيعاً",
+    "categories": "تسوق حسب الفئة",
+    "lookbook": "تسوق المظهر",
+    "values": "لماذا دروجبا؟",
+    "community": "انضم لعائلة #Drogba"
+  },
+  "product": {
+    "price": "جنيه",
+    "addToCart": "أضف للسلة",
+    "quickView": "نظرة سريعة",
+    "viewDetails": "عرض التفاصيل",
+    "selectSize": "اختر المقاس",
+    "quantity": "الكمية",
+    "description": "الوصف",
+    "sizingChart": "دليل المقاسات",
+    "shipping": "الشحن والإرجاع",
+    "outOfStock": "غير متوفر"
+  },
+  "cart": {
+    "title": "السلة",
+    "empty": "السلة فارغة",
+    "total": "الإجمالي",
+    "checkout": "إتمام الطلب",
+    "continueShopping": "متابعة التسوق"
+  },
+  "checkout": {
+    "title": "إتمام الطلب",
+    "customerInfo": "معلومات العميل",
+    "name": "الاسم",
+    "phone": "رقم الهاتف",
+    "address": "العنوان",
+    "paymentMethod": "طريقة الدفع",
+    "cod": "الدفع عند الاستلام",
+    "wallet": "محفظة إلكترونية",
+    "placeOrder": "تأكيد الطلب",
+    "orderSummary": "ملخص الطلب"
+  },
+  "values": {
+    "shipping": {
+      "title": "شحن سريع",
+      "desc": "توصيل لجميع المحافظات"
+    },
+    "quality": {
+      "title": "جودة عالية",
+      "desc": "أقمشة مختارة بعناية"
+    },
+    "secure": {
+      "title": "دفع آمن",
+      "desc": "معاملات موثوقة 100%"
+    }
+  },
+  "footer": {
+    "quickLinks": "روابط سريعة",
+    "followUs": "تابعنا",
+    "paymentMethods": "طرق الدفع",
+    "rights": "جميع الحقوق محفوظة"
+  },
+  "theme": {
+    "light": "فاتح",
+    "dark": "داكن"
+  }
+}

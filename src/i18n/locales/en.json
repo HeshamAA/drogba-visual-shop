@@ -1,0 +1,74 @@
+{
+  "nav": {
+    "home": "Home",
+    "shop": "Shop",
+    "about": "About",
+    "contact": "Contact"
+  },
+  "hero": {
+    "headline": "Your Style. Your Identity. Drogba.",
+    "cta": "Shop Now"
+  },
+  "sections": {
+    "featured": "Best Sellers",
+    "categories": "Shop by Category",
+    "lookbook": "Shop the Look",
+    "values": "Why Drogba?",
+    "community": "Join the #Drogba Family"
+  },
+  "product": {
+    "price": "EGP",
+    "addToCart": "Add to Cart",
+    "quickView": "Quick View",
+    "viewDetails": "View Details",
+    "selectSize": "Select Size",
+    "quantity": "Quantity",
+    "description": "Description",
+    "sizingChart": "Sizing Chart",
+    "shipping": "Shipping & Returns",
+    "outOfStock": "Out of Stock"
+  },
+  "cart": {
+    "title": "Cart",
+    "empty": "Your cart is empty",
+    "total": "Total",
+    "checkout": "Checkout",
+    "continueShopping": "Continue Shopping"
+  },
+  "checkout": {
+    "title": "Checkout",
+    "customerInfo": "Customer Information",
+    "name": "Name",
+    "phone": "Phone",
+    "address": "Address",
+    "paymentMethod": "Payment Method",
+    "cod": "Cash on Delivery",
+    "wallet": "E-Wallet",
+    "placeOrder": "Place Order",
+    "orderSummary": "Order Summary"
+  },
+  "values": {
+    "shipping": {
+      "title": "Fast Shipping",
+      "desc": "Delivery to all governorates"
+    },
+    "quality": {
+      "title": "High Quality",
+      "desc": "Carefully selected fabrics"
+    },
+    "secure": {
+      "title": "Secure Payment",
+      "desc": "100% trusted transactions"
+    }
+  },
+  "footer": {
+    "quickLinks": "Quick Links",
+    "followUs": "Follow Us",
+    "paymentMethods": "Payment Methods",
+    "rights": "All rights reserved"
+  },
+  "theme": {
+    "light": "Light",
+    "dark": "Dark"
+  }
+}
