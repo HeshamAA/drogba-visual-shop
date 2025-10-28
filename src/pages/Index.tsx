@@ -2,7 +2,7 @@ import { MOCK_HOMEPAGE, MOCK_PRODUCTS } from '@/lib/mock-data';
 import HeroSection from '@/components/home/HeroSection';
 import FeaturedProducts from '@/components/home/FeaturedProducts';
 import CategoriesSpotlight from '@/components/home/CategoriesSpotlight';
-import InteractiveLookbook from '@/components/home/InteractiveLookbook';
+import SpecialOffers from '@/components/home/SpecialOffers';
 import NewArrivals from '@/components/home/NewArrivals';
 import ValueProposition from '@/components/home/ValueProposition';
 import BrandStory from '@/components/home/BrandStory';
@@ -14,7 +14,6 @@ export default function Index() {
 
   const heroImageUrl = homepage.hero_image_bg.data?.attributes.url || null;
   const heroVideoUrl = homepage.hero_video_bg.data?.attributes.url || null;
-  const lookbookImageUrl = homepage.lookbook_image.data?.attributes.url || '';
 
   return (
     <div className="min-h-screen">
@@ -28,10 +27,7 @@ export default function Index() {
 
       <CategoriesSpotlight />
 
-      <InteractiveLookbook
-        imageUrl={lookbookImageUrl}
-        hotspots={homepage.lookbook_hotspots}
-      />
+      <SpecialOffers />
 
       <NewArrivals products={MOCK_PRODUCTS} />
 

@@ -13,7 +13,7 @@
     "featured": "Best Sellers",
     "categories": "Shop by Category",
     "categoriesDesc": "Discover our diverse collection",
-    "lookbook": "Shop the Look",
+    "specialOffers": "Special Offers",
     "values": "Why Drogba?",
     "community": "Join the #Drogba Family",
     "communityDesc": "Share your style with us on Instagram",
@@ -90,5 +90,23 @@
   "theme": {
     "light": "Light",
     "dark": "Dark"
+  },
+  "offers": {
+    "subtitle": "Exclusive limited-time offers - don't miss out!",
+    "deal1": {
+      "title": "Combo Deal",
+      "description": "Buy 2 items and get 30% off the third one"
+    },
+    "deal2": {
+      "title": "New Customers",
+      "description": "20% off your first order - welcome to the Drogba family"
+    },
+    "deal3": {
+      "title": "Free Shipping",
+      "description": "Free delivery on all orders over 500 EGP"
+    }
+  },
+  "cta": {
+    "shopNow": "Shop Now"
   }
 }
