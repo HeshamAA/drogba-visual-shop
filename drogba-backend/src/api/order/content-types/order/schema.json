@@ -1,0 +1,31 @@
+{
+  "kind": "collectionType",
+  "collectionName": "orders",
+  "info": {
+    "singularName": "order",
+    "pluralName": "orders",
+    "displayName": "Order"
+  },
+  "options": {
+    "draftAndPublish": false
+  },
+  "attributes": {
+    "customer_name": { "type": "string", "required": true },
+    "customer_phone": { "type": "string", "required": true },
+    "address": { "type": "text", "required": true },
+    "status": {
+      "type": "enumeration",
+      "enum": ["pending", "delivered", "canceled"],
+      "default": "pending"
+    },
+    "payment_method": { "type": "string", "default": "Cash on Delivery" },
+    "total_price": { "type": "decimal", "required": true },
+    "products": {
+      "type": "relation",
+      "relation": "manyToMany",
+      "target": "api::product.product",
+      "inversedBy": "orders"
+    }
+  }
+}
+
