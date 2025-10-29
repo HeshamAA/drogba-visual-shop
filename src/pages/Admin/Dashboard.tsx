@@ -1,38 +1,52 @@
-import { useEffect } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { useAdmin } from '@/contexts/AdminContext';
-import { Package, ShoppingCart, TrendingUp, LogOut } from 'lucide-react';
+import { Link } from "react-router-dom";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { useAdmin } from "@/contexts/AdminContext";
+import { useAuth } from "@/hooks/useAuth";
+import ThemeToggle from "@/components/admin/ThemeToggle";
+import ProtectedRoute from "@/components/admin/ProtectedRoute";
+import {
+  Package,
+  ShoppingCart,
+  TrendingUp,
+  LogOut,
+  TicketPercent,
+} from "lucide-react";
 
-export default function AdminDashboard() {
-  const navigate = useNavigate();
-  const { products, orders } = useAdmin();
-
-  useEffect(() => {
-    const isAuthenticated = localStorage.getItem('admin_authenticated');
-    if (!isAuthenticated) {
-      navigate('/admin/login');
-    }
-  }, [navigate]);
+function AdminDashboardContent() {
+  const { products, orders, loading } = useAdmin();
+  const { logout } = useAuth();
 
   const handleLogout = () => {
-    localStorage.removeItem('admin_authenticated');
-    navigate('/admin/login');
+    logout();
   };
 
-  const pendingOrders = orders.filter(o => o.status === 'pending').length;
+  const pendingOrders = orders.filter((o) => o.status === "pending").length;
   const totalRevenue = orders.reduce((sum, order) => sum + order.totalPrice, 0);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-muted/30 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">جاري التحميل...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-muted/30">
       <header className="bg-card border-b">
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <h1 className="text-2xl font-bold">لوحة تحكم الإدمن</h1>
-          <Button variant="outline" onClick={handleLogout}>
-            <LogOut className="w-4 h-4 ml-2" />
-            تسجيل الخروج
-          </Button>
+          <div className="flex items-center gap-2">
+            <ThemeToggle />
+            <Button variant="outline" onClick={handleLogout}>
+              <LogOut className="w-4 h-4 ml-2" />
+              تسجيل الخروج
+            </Button>
+          </div>
         </div>
       </header>
 
@@ -40,7 +54,9 @@ export default function AdminDashboard() {
         <div className="grid gap-6 md:grid-cols-3 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">إجمالي المنتجات</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                إجمالي المنتجات
+              </CardTitle>
               <Package className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -51,7 +67,9 @@ export default function AdminDashboard() {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">الطلبات المعلقة</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                الطلبات المعلقة
+              </CardTitle>
               <ShoppingCart className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
@@ -62,11 +80,15 @@ export default function AdminDashboard() {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">إجمالي الإيرادات</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                إجمالي الإيرادات
+              </CardTitle>
               <TrendingUp className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{totalRevenue.toFixed(2)} ج.م</div>
+              <div className="text-2xl font-bold">
+                {totalRevenue.toFixed(2)} ج.م
+              </div>
               <p className="text-xs text-muted-foreground">من جميع الطلبات</p>
             </CardContent>
           </Card>
@@ -82,7 +104,7 @@ export default function AdminDashboard() {
                 عرض وتعديل وإضافة منتجات جديدة
               </p>
               <Link to="/admin/products">
-                <Button className="w-full">
+                <Button className="w-full" variant="gradient">
                   <Package className="w-4 h-4 ml-2" />
                   إدارة المنتجات
                 </Button>
@@ -99,9 +121,26 @@ export default function AdminDashboard() {
                 عرض ومتابعة حالة الطلبات
               </p>
               <Link to="/admin/orders">
-                <Button className="w-full">
+                <Button className="w-full" variant="gradient">
                   <ShoppingCart className="w-4 h-4 ml-2" />
                   إدارة الطلبات
+                </Button>
+              </Link>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>إدارة الأكواد الترويجية</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <p className="text-sm text-muted-foreground mb-4">
+                إنشاء وتعديل أكواد الخصم وربطها بالمنتجات
+              </p>
+              <Link to="/admin/coupons">
+                <Button className="w-full" variant="gradient">
+                  <TicketPercent className="w-4 h-4 ml-2" />
+                  إدارة الكوبونات
                 </Button>
               </Link>
             </CardContent>
@@ -109,5 +148,13 @@ export default function AdminDashboard() {
         </div>
       </main>
     </div>
+  );
+}
+
+export default function AdminDashboard() {
+  return (
+    <ProtectedRoute>
+      <AdminDashboardContent />
+    </ProtectedRoute>
   );
 }

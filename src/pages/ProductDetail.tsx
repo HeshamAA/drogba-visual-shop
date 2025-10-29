@@ -1,19 +1,19 @@
-import { useState } from 'react';
-import { useParams, Navigate } from 'react-router-dom';
-import { useTranslation } from 'react-i18next';
-import { MOCK_PRODUCTS } from '@/lib/mock-data';
-import { Button } from '@/components/ui/button';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Label } from '@/components/ui/label';
+import { useState } from "react";
+import { useParams, Navigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
+import { MOCK_PRODUCTS } from "@/lib/mock-data";
+import { Button } from "@/components/ui/button";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from '@/components/ui/accordion';
-import { Minus, Plus, Shield, RotateCcw } from 'lucide-react';
-import { useCart } from '@/contexts/CartContext';
-import { toast } from 'sonner';
+} from "@/components/ui/accordion";
+import { Minus, Plus, Shield, RotateCcw } from "lucide-react";
+import { useCart } from "@/contexts/CartContext";
+import { toast } from "sonner";
 
 export default function ProductDetail() {
   const { slug } = useParams();
@@ -22,7 +22,7 @@ export default function ProductDetail() {
 
   const product = MOCK_PRODUCTS.find((p) => p.attributes.slug === slug);
 
-  const [selectedSize, setSelectedSize] = useState('');
+  const [selectedSize, setSelectedSize] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
@@ -39,7 +39,7 @@ export default function ProductDetail() {
 
   const handleAddToCart = () => {
     if (!selectedSize) {
-      toast.error(t('product.selectSize'));
+      toast.error(t("product.selectSize"));
       return;
     }
 
@@ -47,13 +47,13 @@ export default function ProductDetail() {
       id: `${product.id}_${selectedSize}`,
       productId: product.id,
       name: product.attributes.name,
-      image: mainImage || '',
+      image: mainImage || "",
       price: product.attributes.price,
       size: selectedSize,
       quantity,
     });
 
-    toast.success(`${product.attributes.name} ${t('product.addToCart')}`);
+    toast.success(`${product.attributes.name} ${t("product.addToCart")}`);
   };
 
   return (
@@ -81,8 +81,8 @@ export default function ProductDetail() {
                     flex-shrink-0 w-20 h-20 rounded-md overflow-hidden border-2 transition-all
                     ${
                       selectedImageIndex === index
-                        ? 'border-primary'
-                        : 'border-transparent hover:border-border'
+                        ? "border-primary"
+                        : "border-transparent hover:border-border"
                     }
                   `}
                 >
@@ -103,15 +103,23 @@ export default function ProductDetail() {
             <h1 className="text-3xl md:text-4xl font-bold mb-2">
               {product.attributes.name}
             </h1>
-            <p className="text-2xl font-bold text-accent">
-              {product.attributes.price} {t('product.price')}
-            </p>
+            <div className="text-accent flex items-center gap-3">
+              {product.attributes.old_price &&
+                product.attributes.old_price > product.attributes.price && (
+                  <span className="text-muted-foreground line-through text-lg">
+                    {product.attributes.old_price} {t("product.price")}
+                  </span>
+                )}
+              <span className="text-2xl font-bold">
+                {product.attributes.price} {t("product.price")}
+              </span>
+            </div>
           </div>
 
           {/* Size Selector */}
           <div>
             <Label className="text-base font-semibold mb-3 block">
-              {t('product.selectSize')}
+              {t("product.selectSize")}
             </Label>
             <RadioGroup value={selectedSize} onValueChange={setSelectedSize}>
               <div className="flex flex-wrap gap-2">
@@ -130,8 +138,8 @@ export default function ProductDetail() {
                         transition-all font-semibold
                         ${
                           size.inStock
-                            ? 'border-border hover:border-primary peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary peer-data-[state=checked]:text-primary-foreground'
-                            : 'opacity-50 cursor-not-allowed line-through'
+                            ? "border-border hover:border-primary peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary peer-data-[state=checked]:text-primary-foreground"
+                            : "opacity-50 cursor-not-allowed line-through"
                         }
                       `}
                     >
@@ -146,7 +154,7 @@ export default function ProductDetail() {
           {/* Quantity */}
           <div>
             <Label className="text-base font-semibold mb-3 block">
-              {t('product.quantity')}
+              {t("product.quantity")}
             </Label>
             <div className="flex items-center gap-4">
               <Button
@@ -170,15 +178,20 @@ export default function ProductDetail() {
           </div>
 
           {/* Add to Cart */}
-          <Button onClick={handleAddToCart} size="lg" className="w-full">
-            {t('product.addToCart')}
+          <Button
+            onClick={handleAddToCart}
+            size="lg"
+            variant="gradient"
+            className="w-full"
+          >
+            {t("product.addToCart")}
           </Button>
 
           {/* Trust Badges */}
           <div className="flex gap-4 pt-4 border-t">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <Shield className="h-4 w-4" />
-              <span>{t('values.secure.title')}</span>
+              <span>{t("values.secure.title")}</span>
             </div>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <RotateCcw className="h-4 w-4" />
@@ -190,7 +203,7 @@ export default function ProductDetail() {
           <Accordion type="single" collapsible defaultValue="description">
             <AccordionItem value="description">
               <AccordionTrigger className="text-base font-semibold">
-                {t('product.description')}
+                {t("product.description")}
               </AccordionTrigger>
               <AccordionContent>
                 <div
@@ -204,7 +217,7 @@ export default function ProductDetail() {
 
             <AccordionItem value="sizing">
               <AccordionTrigger className="text-base font-semibold">
-                {t('product.sizingChart')}
+                {t("product.sizingChart")}
               </AccordionTrigger>
               <AccordionContent>
                 <p className="text-sm text-muted-foreground">
@@ -215,7 +228,7 @@ export default function ProductDetail() {
 
             <AccordionItem value="shipping">
               <AccordionTrigger className="text-base font-semibold">
-                {t('product.shipping')}
+                {t("product.shipping")}
               </AccordionTrigger>
               <AccordionContent>
                 <p className="text-sm text-muted-foreground">

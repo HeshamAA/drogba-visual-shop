@@ -1,9 +1,9 @@
-import { motion } from 'framer-motion';
-import { useTranslation } from 'react-i18next';
-import { Product } from '@/types/strapi';
-import ProductCard from '@/components/products/ProductCard';
-import { Link } from 'react-router-dom';
-import { ArrowRight } from 'lucide-react';
+import { motion } from "framer-motion";
+import { useTranslation } from "react-i18next";
+import { Product } from "@/types/strapi";
+import ProductCard from "@/components/products/ProductCard";
+import { Link } from "react-router-dom";
+import { ArrowRight } from "lucide-react";
 
 interface NewArrivalsProps {
   products: Product[];
@@ -13,7 +13,7 @@ export default function NewArrivals({ products }: NewArrivalsProps) {
   const { t } = useTranslation();
 
   return (
-    <section className="py-20 px-4 container mx-auto bg-secondary/30">
+    <section className="py-20 px-4 container mx-auto bg-surface dark:bg-surface-dark rounded-3xl">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
@@ -22,17 +22,19 @@ export default function NewArrivals({ products }: NewArrivalsProps) {
       >
         <div>
           <h2 className="text-4xl md:text-5xl font-bold mb-2">
-            {t('sections.newArrivals', 'وصل حديثاً')}
+            {t("sections.newArrivals", "وصل حديثاً")}
           </h2>
           <p className="text-muted-foreground text-lg">
-            {t('sections.newArrivalsDesc', 'أحدث إصداراتنا الحصرية')}
+            {t("sections.newArrivalsDesc", "أحدث إصداراتنا الحصرية")}
           </p>
         </div>
         <Link
           to="/products"
           className="hidden md:flex items-center gap-2 text-primary hover:gap-3 transition-all"
         >
-          <span className="font-semibold">{t('common.viewAll', 'عرض الكل')}</span>
+          <span className="font-semibold">
+            {t("common.viewAll", "عرض الكل")}
+          </span>
           <ArrowRight className="w-5 h-5" />
         </Link>
       </motion.div>
@@ -55,7 +57,7 @@ export default function NewArrivals({ products }: NewArrivalsProps) {
         to="/products"
         className="md:hidden flex items-center justify-center gap-2 text-primary hover:gap-3 transition-all mt-8"
       >
-        <span className="font-semibold">{t('common.viewAll', 'عرض الكل')}</span>
+        <span className="font-semibold">{t("common.viewAll", "عرض الكل")}</span>
         <ArrowRight className="w-5 h-5" />
       </Link>
     </section>

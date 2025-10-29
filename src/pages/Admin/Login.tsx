@@ -1,40 +1,69 @@
-import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { useToast } from '@/hooks/use-toast';
-import { Lock } from 'lucide-react';
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { useToast } from "@/hooks/use-toast";
+import ThemeToggle from "@/components/admin/ThemeToggle";
+import { Lock } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 
 export default function AdminLogin() {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
+  const { isAuthenticated, login } = useAuth();
 
-  const handleLogin = (e: React.FormEvent) => {
+  // If already authenticated, redirect to dashboard
+  useEffect(() => {
+    if (isAuthenticated) {
+      const from =
+        (location.state as any)?.from?.pathname || "/admin/dashboard";
+      navigate(from, { replace: true });
+    }
+  }, [isAuthenticated, navigate, location]);
+
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Simple mock authentication
-    if (username === 'admin' && password === 'admin123') {
-      localStorage.setItem('admin_authenticated', 'true');
+    setIsLoading(true);
+
+    try {
+      await login(username, password);
       toast({
         title: "تم تسجيل الدخول بنجاح",
         description: "مرحباً بك في لوحة التحكم",
       });
-      navigate('/admin/dashboard');
-    } else {
+
+      const from =
+        (location.state as any)?.from?.pathname || "/admin/dashboard";
+      navigate(from, { replace: true });
+    } catch (error: any) {
+      
       toast({
         title: "خطأ في تسجيل الدخول",
-        description: "اسم المستخدم أو كلمة المرور غير صحيحة",
+        description: error.message || "اسم المستخدم أو كلمة المرور غير صحيحة",
         variant: "destructive",
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-muted/30">
+    <div className="min-h-screen flex items-center justify-center bg-muted/30 relative">
+      <div className="absolute top-4 right-4">
+        <ThemeToggle />
+      </div>
       <Card className="w-full max-w-md mx-4">
         <CardHeader className="space-y-1 text-center">
           <div className="flex justify-center mb-4">
@@ -71,13 +100,17 @@ export default function AdminLogin() {
                 required
               />
             </div>
-            <Button type="submit" className="w-full">
-              تسجيل الدخول
+            <Button
+              type="submit"
+              variant="gradient"
+              className="w-full"
+              disabled={isLoading}
+            >
+              {isLoading ? "جاري تسجيل الدخول..." : "تسجيل الدخول"}
             </Button>
           </form>
           <div className="mt-4 p-3 bg-muted rounded-md text-sm text-muted-foreground text-center">
-            <p>بيانات التجربة:</p>
-            <p className="font-mono mt-1">admin / admin123</p>
+            <p>يرجى تسجيل الدخول بحساب Super Admin</p>
           </div>
         </CardContent>
       </Card>

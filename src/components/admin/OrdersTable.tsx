@@ -1,45 +1,47 @@
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Card } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-
-interface Order {
-  id: string;
-  customerName: string;
-  customerPhone: string;
-  customerAddress: string;
-  items: {
-    productId: number;
-    productName: string;
-    size: string;
-    quantity: number;
-    price: number;
-  }[];
-  totalPrice: number;
-  status: 'pending' | 'confirmed' | 'shipped' | 'delivered';
-  createdAt: string;
-}
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Card } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { Order } from "@/types/strapi";
 
 interface OrdersTableProps {
   orders: Order[];
-  onUpdateStatus: (orderId: string, status: Order['status']) => void;
+  onUpdateStatus: (orderId: number, status: Order["status"]) => void;
+  isUpdating?: boolean;
 }
 
 const statusLabels = {
-  pending: 'قيد الانتظار',
-  confirmed: 'مؤكد',
-  shipped: 'تم الشحن',
-  delivered: 'تم التسليم',
-};
+  pending: "قيد الانتظار",
+  confirmed: "مؤكد",
+  shipped: "تم الشحن",
+  delivered: "تم التسليم",
+} as const;
 
 const statusColors = {
-  pending: 'bg-yellow-100 text-yellow-800',
-  confirmed: 'bg-blue-100 text-blue-800',
-  shipped: 'bg-purple-100 text-purple-800',
-  delivered: 'bg-green-100 text-green-800',
-};
+  pending: "bg-yellow-100 text-yellow-800",
+  confirmed: "bg-blue-100 text-blue-800",
+  shipped: "bg-purple-100 text-purple-800",
+  delivered: "bg-green-100 text-green-800",
+} as const;
 
-export default function OrdersTable({ orders, onUpdateStatus }: OrdersTableProps) {
+export default function OrdersTable({
+  orders,
+  onUpdateStatus,
+  isUpdating,
+}: OrdersTableProps) {
   return (
     <Card>
       <Table>
@@ -57,35 +59,59 @@ export default function OrdersTable({ orders, onUpdateStatus }: OrdersTableProps
         <TableBody>
           {orders.length === 0 ? (
             <TableRow>
-              <TableCell colSpan={7} className="text-center py-8 text-muted-foreground">
+              <TableCell
+                colSpan={7}
+                className="text-center py-8 text-muted-foreground"
+              >
                 لا توجد طلبات
               </TableCell>
             </TableRow>
           ) : (
             orders.map((order) => (
               <TableRow key={order.id}>
-                <TableCell className="font-mono text-sm">{order.id.slice(0, 8)}</TableCell>
-                <TableCell className="font-medium">{order.customerName}</TableCell>
-                <TableCell>{order.customerPhone}</TableCell>
+                <TableCell className="font-mono text-sm">{order.id}</TableCell>
+                <TableCell className="font-medium">
+                  {order.customer_name}
+                </TableCell>
+                <TableCell>{order.phone}</TableCell>
                 <TableCell>
                   <div className="space-y-1">
-                    {order.items.map((item, idx) => (
-                      <div key={idx} className="text-sm">
-                        {item.productName} ({item.size}) x{item.quantity}
-                      </div>
-                    ))}
+                    {order.products ? (
+                      Array.isArray(order.products) ? (
+                        order.products.map((item: any, idx: number) => (
+                          <div key={idx} className="text-sm">
+                            {item.name || item.productName}{" "}
+                            {item.size ? `(${item.size})` : ""} x{item.quantity}
+                          </div>
+                        ))
+                      ) : (
+                        <div className="text-sm">منتجات الطلب</div>
+                      )
+                    ) : (
+                      <div className="text-sm">لا توجد منتجات</div>
+                    )}
                   </div>
                 </TableCell>
-                <TableCell className="font-semibold">{order.totalPrice} ج.م</TableCell>
+                <TableCell className="font-semibold">
+                  {order.total_price} ج.م
+                </TableCell>
                 <TableCell>
                   <Select
                     value={order.status}
-                    onValueChange={(value) => onUpdateStatus(order.id, value as Order['status'])}
+                    onValueChange={(value) =>
+                      onUpdateStatus(order.id, value as Order["status"])
+                    }
+                    disabled={isUpdating}
                   >
                     <SelectTrigger className="w-[140px]">
                       <SelectValue>
-                        <Badge className={statusColors[order.status]}>
-                          {statusLabels[order.status]}
+                        <Badge
+                          className={
+                            statusColors[order.status] ||
+                            "bg-gray-100 text-gray-800"
+                          }
+                        >
+                          {statusLabels[order.status] || order.status}
                         </Badge>
                       </SelectValue>
                     </SelectTrigger>
@@ -98,7 +124,7 @@ export default function OrdersTable({ orders, onUpdateStatus }: OrdersTableProps
                   </Select>
                 </TableCell>
                 <TableCell className="text-sm text-muted-foreground">
-                  {new Date(order.createdAt).toLocaleDateString('ar-EG')}
+                  {new Date(order.createdAt).toLocaleDateString("ar-EG")}
                 </TableCell>
               </TableRow>
             ))

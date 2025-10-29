@@ -1,7 +1,7 @@
-import { useTranslation } from 'react-i18next';
-import { Button } from '@/components/ui/button';
-import { Link } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { useTranslation } from "react-i18next";
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 
 interface HeroSectionProps {
   headline: string;
@@ -9,7 +9,11 @@ interface HeroSectionProps {
   videoUrl?: string | null;
 }
 
-export default function HeroSection({ headline, imageUrl, videoUrl }: HeroSectionProps) {
+export default function HeroSection({
+  headline,
+  imageUrl,
+  videoUrl,
+}: HeroSectionProps) {
   const { t } = useTranslation();
 
   return (
@@ -33,9 +37,9 @@ export default function HeroSection({ headline, imageUrl, videoUrl }: HeroSectio
             className="h-full w-full object-cover"
           />
         ) : (
-          <div className="h-full w-full bg-gradient-to-br from-primary to-primary/80" />
+          <div className="h-full w-full bg-hero" />
         )}
-        <div className="absolute inset-0 bg-black/40" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/30 to-transparent" />
       </div>
 
       {/* Content */}
@@ -54,15 +58,19 @@ export default function HeroSection({ headline, imageUrl, videoUrl }: HeroSectio
           >
             {headline}
           </motion.h1>
-          
+
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.6 }}
           >
             <Link to="/products">
-              <Button size="lg" className="bg-accent hover:bg-accent/90 text-accent-foreground font-semibold px-8 py-6 text-lg">
-                {t('hero.cta')}
+              <Button
+                size="lg"
+                variant="gradient"
+                className="font-semibold px-8 py-6 text-lg shadow-lg shadow-black/10"
+              >
+                {t("hero.cta")}
               </Button>
             </Link>
           </motion.div>

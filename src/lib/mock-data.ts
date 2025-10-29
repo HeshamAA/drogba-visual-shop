@@ -1,4 +1,4 @@
-import { Product, HomePage } from '@/types/strapi';
+import { Product, HomePage } from "@/types/strapi";
 
 export const MOCK_PRODUCTS: Product[] = [
   {
@@ -6,8 +6,11 @@ export const MOCK_PRODUCTS: Product[] = [
     attributes: {
       name: "تيشرت دروجبا كلاسيك",
       slug: "drogba-classic-tee",
-      description: "<p>تيشرت كلاسيك بتصميم عصري مصنوع من أجود أنواع القطن المصري 100%. مريح للغاية ومثالي للارتداء اليومي. متوفر بعدة مقاسات.</p>",
+      description:
+        "<p>تيشرت كلاسيك بتصميم عصري مصنوع من أجود أنواع القطن المصري 100%. مريح للغاية ومثالي للارتداء اليومي. متوفر بعدة مقاسات.</p>",
       price: 450,
+      old_price: 550,
+      applicable_coupons: ["DROG10"],
       sizes: [
         { name: "S", inStock: true },
         { name: "M", inStock: true },
@@ -67,8 +70,10 @@ export const MOCK_PRODUCTS: Product[] = [
     attributes: {
       name: "هودي دروجبا أوفرسايز",
       slug: "drogba-oversized-hoodie",
-      description: "<p>هودي أوفرسايز فاخر بجودة عالية، مصنوع من قطن ممتاز مع بطانة ناعمة. التصميم العصري يمنحك إطلالة مميزة وأناقة لا مثيل لها.</p>",
+      description:
+        "<p>هودي أوفرسايز فاخر بجودة عالية، مصنوع من قطن ممتاز مع بطانة ناعمة. التصميم العصري يمنحك إطلالة مميزة وأناقة لا مثيل لها.</p>",
       price: 850,
+      old_price: 990,
       sizes: [
         { name: "M", inStock: true },
         { name: "L", inStock: true },
@@ -119,7 +124,8 @@ export const MOCK_PRODUCTS: Product[] = [
     attributes: {
       name: "سويت شيرت دروجبا برو",
       slug: "drogba-pro-sweatshirt",
-      description: "<p>سويت شيرت رياضي بتصميم احترافي، مثالي للتمرين والاستخدام اليومي. مصنوع من أقمشة تسمح بمرور الهواء للراحة القصوى.</p>",
+      description:
+        "<p>سويت شيرت رياضي بتصميم احترافي، مثالي للتمرين والاستخدام اليومي. مصنوع من أقمشة تسمح بمرور الهواء للراحة القصوى.</p>",
       price: 650,
       sizes: [
         { name: "S", inStock: true },
@@ -171,8 +177,10 @@ export const MOCK_PRODUCTS: Product[] = [
     attributes: {
       name: "جاكيت دروجبا الشتوي",
       slug: "drogba-winter-jacket",
-      description: "<p>جاكيت شتوي أنيق ودافئ، مثالي للطقس البارد. تصميم عملي مع جيوب متعددة وسحابات عالية الجودة.</p>",
+      description:
+        "<p>جاكيت شتوي أنيق ودافئ، مثالي للطقس البارد. تصميم عملي مع جيوب متعددة وسحابات عالية الجودة.</p>",
       price: 1200,
+      old_price: 1400,
       sizes: [
         { name: "M", inStock: true },
         { name: "L", inStock: true },

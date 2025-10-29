@@ -1,8 +1,8 @@
-import { useTranslation } from 'react-i18next';
-import { motion } from 'framer-motion';
-import { Button } from '@/components/ui/button';
-import { Link } from 'react-router-dom';
-import { Zap, TrendingUp, Sparkles } from 'lucide-react';
+import { useTranslation } from "react-i18next";
+import { motion } from "framer-motion";
+import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
+import { Zap, TrendingUp, Sparkles } from "lucide-react";
 
 export default function SpecialOffers() {
   const { t } = useTranslation();
@@ -10,30 +10,30 @@ export default function SpecialOffers() {
   const offers = [
     {
       id: 1,
-      title: t('offers.deal1.title'),
-      description: t('offers.deal1.description'),
-      discount: '30%',
+      title: t("offers.deal1.title"),
+      description: t("offers.deal1.description"),
+      discount: "30%",
       icon: Zap,
-      gradient: 'from-accent/20 to-primary/20',
-      borderColor: 'border-accent/50',
+      gradient: "from-accent/20 to-primary/20",
+      borderColor: "border-accent/50",
     },
     {
       id: 2,
-      title: t('offers.deal2.title'),
-      description: t('offers.deal2.description'),
-      discount: '20%',
+      title: t("offers.deal2.title"),
+      description: t("offers.deal2.description"),
+      discount: "20%",
       icon: TrendingUp,
-      gradient: 'from-primary/20 to-accent/20',
-      borderColor: 'border-primary/50',
+      gradient: "from-primary/20 to-accent/20",
+      borderColor: "border-primary/50",
     },
     {
       id: 3,
-      title: t('offers.deal3.title'),
-      description: t('offers.deal3.description'),
-      discount: '15%',
+      title: t("offers.deal3.title"),
+      description: t("offers.deal3.description"),
+      discount: "15%",
       icon: Sparkles,
-      gradient: 'from-accent/30 to-primary/30',
-      borderColor: 'border-accent/40',
+      gradient: "from-accent/30 to-primary/30",
+      borderColor: "border-accent/40",
     },
   ];
 
@@ -47,10 +47,10 @@ export default function SpecialOffers() {
         className="text-center mb-12"
       >
         <h2 className="text-3xl md:text-4xl font-bold mb-4">
-          {t('sections.specialOffers')}
+          {t("sections.specialOffers")}
         </h2>
         <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-          {t('offers.subtitle')}
+          {t("offers.subtitle")}
         </p>
       </motion.div>
 
@@ -68,7 +68,7 @@ export default function SpecialOffers() {
             >
               {/* Animated Background */}
               <div className="absolute inset-0 bg-gradient-to-r from-accent/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-              
+
               {/* Content */}
               <div className="relative z-10">
                 <div className="flex items-start justify-between mb-4">
@@ -82,16 +82,14 @@ export default function SpecialOffers() {
                   </motion.div>
                 </div>
 
-                <h3 className="text-2xl font-bold mb-3">
-                  {offer.title}
-                </h3>
+                <h3 className="text-2xl font-bold mb-3">{offer.title}</h3>
                 <p className="text-muted-foreground mb-6">
                   {offer.description}
                 </p>
 
                 <Link to="/products">
-                  <Button variant="outline" className="w-full group-hover:bg-accent group-hover:text-accent-foreground transition-all duration-300">
-                    {t('cta.shopNow')}
+                  <Button variant="gradient" className="w-full">
+                    {t("cta.shopNow")}
                   </Button>
                 </Link>
               </div>

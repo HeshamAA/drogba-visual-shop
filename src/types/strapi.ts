@@ -43,7 +43,12 @@ export interface Product {
     name: string;
     slug: string;
     description: string;
+    // price is the current selling price. When discounted, keep original in old_price
     price: number;
+    // optional original price to display strike-through when price < old_price
+    old_price?: number;
+    // list of coupon codes that can apply to this product
+    applicable_coupons?: string[];
     main_image: StrapiImage;
     gallery_images: StrapiImageArray;
     categories: {
@@ -53,6 +58,18 @@ export interface Product {
     createdAt: string;
     updatedAt: string;
   };
+}
+
+// Coupon model for admin-managed discount codes
+export interface Coupon {
+  code: string; // unique uppercase code
+  type: "percent" | "fixed";
+  value: number; // percent 1-100 or fixed amount in EGP
+  active: boolean;
+  // if empty or undefined => global. Otherwise limited to listed product IDs
+  applicableProductIds?: number[];
+  // optional expiration ISO date
+  expiresAt?: string;
 }
 
 export interface Hotspot {
@@ -90,8 +107,8 @@ export interface Order {
   customer_name: string;
   customer_phone: string;
   customer_address: string;
-  payment_method: 'cod' | 'wallet';
+  payment_method: "cod" | "wallet";
   order_items: OrderItem[];
   total_price: number;
-  status: 'pending' | 'confirmed' | 'shipped' | 'delivered';
+  status: "pending" | "confirmed" | "shipped" | "delivered";
 }
