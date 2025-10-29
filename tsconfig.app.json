@@ -23,7 +23,15 @@
 
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@/components/*": ["./src/shared/components/*"],
+      "@/hooks/*": ["./src/shared/hooks/*"],
+      "@/i18n/*": ["./src/shared/i18n/*"],
+      "@/lib/*": ["./src/lib/*"],
+      "@/shared/*": ["./src/shared/*"],
+      "@/features/*": ["./src/features/*"],
+      "@/api/*": ["./src/api/*"],
+      "@/contexts/*": ["./src/shared/contexts/*"]
     }
   },
   "include": ["src"]

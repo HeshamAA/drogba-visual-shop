@@ -1,32 +1,37 @@
 // Strapi Types based on backend specification
 
+export interface MediaFormat {
+  url: string;
+  alternativeText?: string;
+  width?: number;
+  height?: number;
+}
+
 export interface StrapiImage {
-  data: {
+  data?: {
     id: number;
-    attributes: {
-      url: string;
-      alternativeText?: string;
-      width: number;
-      height: number;
-    };
+    attributes: MediaFormat;
   } | null;
+  url?: string;
+  formats?: Record<string, MediaFormat>;
 }
 
 export interface StrapiImageArray {
-  data: Array<{
+  data?: Array<{
     id: number;
-    attributes: {
-      url: string;
-      alternativeText?: string;
-      width: number;
-      height: number;
-    };
+    attributes: MediaFormat;
   }>;
 }
 
 export interface ProductSize {
   name: string;
-  inStock: boolean;
+  inStock?: boolean;
+}
+
+export interface CategorySummary {
+  id?: number | string;
+  name?: string;
+  slug?: string;
 }
 
 export interface Category {
@@ -37,26 +42,31 @@ export interface Category {
   };
 }
 
-export interface Product {
-  id: number;
-  attributes: {
-    name: string;
-    slug: string;
-    description: string;
-    // price is the current selling price. When discounted, keep original in old_price
-    price: number;
-    // optional original price to display strike-through when price < old_price
-    old_price?: number;
-    // list of coupon codes that can apply to this product
-    applicable_coupons?: string[];
-    main_image: StrapiImage;
-    gallery_images: StrapiImageArray;
-    categories: {
-      data: Category[];
+export interface ProductAttributes {
+  name: string;
+  slug: string;
+  description?: string;
+  price: number;
+  old_price?: number;
+  applicable_coupons?: string[];
+  main_image?: StrapiImage;
+  gallery_images?: StrapiImageArray;
+  product_images?: StrapiImage;
+  category?: CategorySummary;
+  categories?: {
+    data?: Category[];
+  };
+  sizes?: ProductSize[] | string[];
+  createdAt?: string;
+  updatedAt?: string;
+}
+
+export interface Product extends ProductAttributes {
+  id: number | string;
+  attributes?: ProductAttributes & {
+    categories?: {
+      data?: Category[];
     };
-    sizes: ProductSize[];
-    createdAt: string;
-    updatedAt: string;
   };
 }
 
@@ -103,12 +113,24 @@ export interface OrderItem {
   price: number;
 }
 
+export interface OrderProductSummary {
+  name?: string;
+  productName?: string;
+  size?: string;
+  quantity?: number;
+}
+
 export interface Order {
-  customer_name: string;
-  customer_phone: string;
-  customer_address: string;
-  payment_method: "cod" | "wallet";
-  order_items: OrderItem[];
-  total_price: number;
-  status: "pending" | "confirmed" | "shipped" | "delivered";
+  id?: number | string;
+  customer_name?: string;
+  customer_phone?: string;
+  phone?: string;
+  customer_address?: string;
+  payment_method?: "cod" | "wallet";
+  order_items?: OrderItem[];
+  products?: OrderProductSummary[];
+  total_price?: number;
+  status?: "pending" | "confirmed" | "shipped" | "delivered";
+  createdAt?: string;
+  updatedAt?: string;
 }

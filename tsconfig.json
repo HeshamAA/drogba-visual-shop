@@ -1,10 +1,21 @@
 {
   "files": [],
-  "references": [{ "path": "./tsconfig.app.json" }, { "path": "./tsconfig.node.json" }],
+  "references": [
+    { "path": "./tsconfig.app.json" },
+    { "path": "./tsconfig.node.json" }
+  ],
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@/components/*": ["./src/shared/components/*"],
+      "@/hooks/*": ["./src/shared/hooks/*"],
+      "@/i18n/*": ["./src/shared/i18n/*"],
+      "@/lib/*": ["./src/lib/*"],
+      "@/shared/*": ["./src/shared/*"],
+      "@/features/*": ["./src/features/*"],
+      "@/api/*": ["./src/api/*"],
+      "@/contexts/*": ["./src/contexts/*"]
     },
     "noImplicitAny": false,
     "noUnusedParameters": false,
