@@ -1,5 +1,5 @@
 import { useTranslation } from "react-i18next";
-import { useCart } from "@/features/cart/CartContext";
+import { useCart } from "@/features/cart";
 import { Button } from "@/shared/components/ui/button";
 import { Link } from "react-router-dom";
 import { Minus, Plus, Trash2, ShoppingBag } from "lucide-react";

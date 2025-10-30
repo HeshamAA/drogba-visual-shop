@@ -6,14 +6,14 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useTheme } from "@/shared/contexts/ThemeContext";
+import { useTheme } from "@/features/theme/ThemeContext";
 
 export default function ThemeToggle() {
-  const { theme, setTheme, actualTheme } = useTheme();
+  const { theme, setTheme, resolvedTheme } = useTheme();
 
   const getIcon = () => {
     if (theme === "system") return <Monitor className="h-4 w-4" />;
-    return actualTheme === "dark" ? (
+    return resolvedTheme === "dark" ? (
       <Moon className="h-4 w-4" />
     ) : (
       <Sun className="h-4 w-4" />

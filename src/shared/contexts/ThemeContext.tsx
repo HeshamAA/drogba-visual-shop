@@ -5,6 +5,7 @@ import {
   useEffect,
   ReactNode,
 } from "react";
+import { loadString, saveString } from "@/shared/utils/storage";
 
 type Theme = "light" | "dark" | "system";
 
@@ -18,7 +19,7 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setTheme] = useState<Theme>(() => {
-    const saved = localStorage.getItem("admin-theme");
+    const saved = loadString("admin-theme", "system");
     return (saved as Theme) || "system";
   });
 
@@ -47,7 +48,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
   }, [theme]);
 
   useEffect(() => {
-    localStorage.setItem("admin-theme", theme);
+    saveString("admin-theme", theme);
   }, [theme]);
 
   useEffect(() => {

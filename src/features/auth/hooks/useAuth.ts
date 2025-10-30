@@ -1,5 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
-import { authApi, type User } from '@/features/auth/api/auth';
+import { useState, useEffect, useCallback } from "react";
+import { authApi, type User } from "@/features/auth/api/auth";
+import { loadJson, loadString, saveJson, saveString, removeItem } from "@/shared/utils/storage";
 
 export type { User };
 
@@ -24,16 +25,12 @@ export function useAuth(): UseAuthReturn {
 
   // Initialize auth state from localStorage
   useEffect(() => {
-    const savedToken = localStorage.getItem(AUTH_KEY);
-    const savedUser = localStorage.getItem(USER_KEY);
+    const savedToken = loadString(AUTH_KEY);
+    const savedUser = loadJson<User | null>(USER_KEY, null);
 
     if (savedToken && savedUser) {
       setToken(savedToken);
-      try {
-        setUser(JSON.parse(savedUser));
-      } catch (e) {
-        console.error("Error parsing user data", e);
-      }
+      setUser(savedUser);
     }
     setIsLoading(false);
   }, []);
@@ -50,17 +47,12 @@ export function useAuth(): UseAuthReturn {
       // Update state and storage
       setToken(jwt);
       setUser(user);
-      
-      try {
-        localStorage.setItem(AUTH_KEY, jwt);
-        localStorage.setItem(USER_KEY, JSON.stringify(user));
-      } catch (storageError) {
-        console.error('Failed to save authentication data:', storageError);
-        // Don't fail the login if storage fails, but log it
-      }
+
+      saveString(AUTH_KEY, jwt);
+      saveJson(USER_KEY, user);
 
       // Remove any old authentication data for cleanup
-      localStorage.removeItem("admin_authenticated");
+      removeItem("admin_authenticated");
       
       console.log("✅ Login successful, user:", user.email);
     } catch (error: any) {
@@ -86,14 +78,14 @@ export function useAuth(): UseAuthReturn {
   const logout = () => {
     setUser(null);
     setToken(null);
-    localStorage.removeItem(AUTH_KEY);
-    localStorage.removeItem(USER_KEY);
+    removeItem(AUTH_KEY);
+    removeItem(USER_KEY);
     // Also remove the old admin_authenticated key for backwards compatibility
-    localStorage.removeItem("admin_authenticated");
+    removeItem("admin_authenticated");
   };
 
   const checkAuth = useCallback(async () => {
-    const savedToken = localStorage.getItem(AUTH_KEY);
+    const savedToken = loadString(AUTH_KEY);
     if (!savedToken) {
       setIsLoading(false);
       return;
@@ -111,9 +103,9 @@ export function useAuth(): UseAuthReturn {
       // Update state with fresh user data
       setUser(currentUser);
       setToken(savedToken);
-      
+
       // Update stored user data
-      localStorage.setItem(USER_KEY, JSON.stringify(currentUser));
+      saveJson(USER_KEY, currentUser);
     } catch (error) {
       console.error("Auth check failed:", error);
       // Clear invalid auth data

@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { useAdmin } from "@/features/admin/AdminContext";
+import { useAdmin } from "@/features/admin/hooks/useAdmin";
 import ProductsTable from "@/features/admin/components/ProductsTable";
 import ProductForm from "@/features/admin/components/ProductForm";
 import {
@@ -11,7 +11,9 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Plus, ArrowLeft } from "lucide-react";
+import toast from "react-hot-toast";
 import { Product } from "@/types/strapi";
+import { loadString } from "@/shared/utils/storage";
 
 export default function AdminProducts() {
   const navigate = useNavigate();
@@ -20,20 +22,26 @@ export default function AdminProducts() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
   useEffect(() => {
-    const isAuthenticated = localStorage.getItem("admin_authenticated");
+    const isAuthenticated = loadString("admin_authenticated");
     if (!isAuthenticated) {
       navigate("/admin/login");
     }
   }, [navigate]);
 
-  const handleSave = (product: Product) => {
-    if (editingProduct) {
-      updateProduct(editingProduct.id, product);
-    } else {
-      addProduct(product);
+  const handleSave = async (product: Product) => {
+    try {
+      if (editingProduct) {
+        await updateProduct(editingProduct.id, product);
+        toast.success("تم تحديث المنتج بنجاح");
+      } else {
+        await addProduct(product);
+        toast.success("تم إضافة المنتج بنجاح");
+      }
+      setIsDialogOpen(false);
+      setEditingProduct(null);
+    } catch (error: any) {
+      toast.error(error?.message || "فشل حفظ المنتج");
     }
-    setIsDialogOpen(false);
-    setEditingProduct(null);
   };
 
   const handleEdit = (product: Product) => {
@@ -41,9 +49,15 @@ export default function AdminProducts() {
     setIsDialogOpen(true);
   };
 
-  const handleDelete = (id: number) => {
-    if (window.confirm("هل أنت متأكد من حذف هذا المنتج؟")) {
-      deleteProduct(id);
+  const handleDelete = async (id: number) => {
+    if (!window.confirm("هل أنت متأكد من حذف هذا المنتج؟")) {
+      return;
+    }
+    try {
+      await deleteProduct(id);
+      toast.success("تم حذف المنتج بنجاح");
+    } catch (error: any) {
+      toast.error(error?.message || "فشل حذف المنتج");
     }
   };
 

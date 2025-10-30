@@ -14,19 +14,14 @@ export default function Index() {
   const { featuredProducts } = useFeaturedProducts();
   const { products } = useProducts({ pageSize: 12 });
 
-  const heroHeadline = featuredProducts[0]?.attributes?.name ?? "";
-  const heroImageUrl =
-    featuredProducts[0]?.attributes?.main_image?.data?.attributes?.url || null;
-  const heroVideoUrl = null;
 
   const newArrivals = useMemo(() => products.slice(0, 4), [products]);
 
   return (
     <div className="min-h-screen bg-app">
       <HeroSection
-        headline={heroHeadline}
-        imageUrl={heroImageUrl}
-        videoUrl={heroVideoUrl}
+      
+
       />
 
       <FeaturedProducts products={featuredProducts} />

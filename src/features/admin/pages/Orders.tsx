@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/shared/components/ui/button";
-import { useAdmin } from "@/features/admin/AdminContext";
+import { useAdmin } from "@/features/admin/hooks/useAdmin";
 import ProtectedRoute from "@/features/admin/components/ProtectedRoute";
 import OrdersTable from "@/features/admin/components/OrdersTable";
 import ThemeToggle from "@/features/admin/components/ThemeToggle";

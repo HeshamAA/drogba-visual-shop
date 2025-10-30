@@ -11,9 +11,9 @@ import {
   AccordionTrigger,
 } from "@/shared/components/ui/accordion";
 import { Minus, Plus, Shield, RotateCcw } from "lucide-react";
-import { useCart } from "@/features/cart/CartContext";
+import { useCart } from "@/features/cart";
 import toast from "react-hot-toast";
-import { useGetProductBySlugQuery } from "@/lib/api/strapiApi";
+import { useProductBySlug } from "@/features/products/hooks/useProducts";
 import type { ProductAttributes, ProductSize } from "@/types/strapi";
 import { getImageUrl } from "@/lib/strapi";
 
@@ -21,11 +21,7 @@ export default function ProductDetail() {
   const { slug } = useParams();
   const { t } = useTranslation();
   const { addItem } = useCart();
-  const {
-    data: product,
-    isLoading,
-    error,
-  } = useGetProductBySlugQuery(slug || "", { skip: !slug });
+  const { product, isLoading, error } = useProductBySlug(slug || "");
 
   const [selectedSize, setSelectedSize] = useState("");
   const [quantity, setQuantity] = useState(1);

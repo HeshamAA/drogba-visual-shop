@@ -4,8 +4,6 @@ import { TooltipProvider } from "@/shared/components/ui/tooltip";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 // Contexts
-import { CartProvider } from "@/features/cart/CartContext";
-import { AdminProvider } from "@/features/admin/AdminContext";
 import { ThemeProvider } from "@/features/theme/ThemeContext";
 
 // i18n
@@ -33,46 +31,39 @@ import Footer from "@/shared/components/layout/Footer";
 
 const App = () => (
   <ThemeProvider>
-    <AdminProvider>
-      <CartProvider>
-        <TooltipProvider>
-          <Toaster position="top-center" />
-          <BrowserRouter>
-            <Routes>
-              {/* Admin Routes - No Header/Footer */}
-              <Route path="/admin/login" element={<AdminLogin />} />
-              <Route path="/admin/dashboard" element={<AdminDashboard />} />
-              <Route path="/admin/products" element={<AdminProducts />} />
-              <Route path="/admin/orders" element={<AdminOrders />} />
-              <Route path="/admin/coupons" element={<AdminCoupons />} />
+    <TooltipProvider>
+      <Toaster position="top-center" />
+      <BrowserRouter>
+        <Routes>
+          {/* Admin Routes - No Header/Footer */}
+          <Route path="/admin/login" element={<AdminLogin />} />
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/admin/products" element={<AdminProducts />} />
+          <Route path="/admin/orders" element={<AdminOrders />} />
+          <Route path="/admin/coupons" element={<AdminCoupons />} />
 
-              {/* Public Routes - With Header/Footer */}
-              <Route
-                path="*"
-                element={
-                  <>
-                    <Header />
-                    <Routes>
-                      <Route path="/" element={<Index />} />
-                      <Route path="/products" element={<Products />} />
-                      <Route
-                        path="/products/:slug"
-                        element={<ProductDetail />}
-                      />
-                      <Route path="/cart" element={<Cart />} />
-                      <Route path="/checkout" element={<Checkout />} />
-                      <Route path="/thank-you" element={<ThankYou />} />
-                      <Route path="*" element={<NotFound />} />
-                    </Routes>
-                    <Footer />
-                  </>
-                }
-              />
-            </Routes>
-          </BrowserRouter>
-        </TooltipProvider>
-      </CartProvider>
-    </AdminProvider>
+          {/* Public Routes - With Header/Footer */}
+          <Route
+            path="*"
+            element={
+              <>
+                <Header />
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/products" element={<Products />} />
+                  <Route path="/products/:slug" element={<ProductDetail />} />
+                  <Route path="/cart" element={<Cart />} />
+                  <Route path="/checkout" element={<Checkout />} />
+                  <Route path="/thank-you" element={<ThankYou />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+                <Footer />
+              </>
+            }
+          />
+        </Routes>
+      </BrowserRouter>
+    </TooltipProvider>
   </ThemeProvider>
 );
 

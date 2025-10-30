@@ -7,16 +7,3 @@ export interface CartItem {
   size: string;
   quantity: number;
 }
-
-export interface CartContextType {
-  items: CartItem[];
-  addItem: (item: CartItem) => void;
-  removeItem: (id: string) => void;
-  incrementItem: (id: string) => void;
-  decrementItem: (id: string) => void;
-  clearCart: () => void;
-  totalItems: number;
-  totalPrice: number;
-  shippingFee: number;
-  payableTotal: number;
-}

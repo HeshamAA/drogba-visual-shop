@@ -8,7 +8,7 @@ import QuickViewModal from "./QuickViewModal";
 import { motion } from "framer-motion";
 import { getImageUrl } from "@/lib/strapi";
 import { Badge } from "@/shared/components/ui/badge";
-import { useCart } from "@/features/cart/CartContext";
+import { useCart } from "@/features/cart";
 import toast from "react-hot-toast";
 
 interface ProductCardProps {

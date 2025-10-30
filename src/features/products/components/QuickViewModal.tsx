@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Product, ProductAttributes, ProductSize } from "@/types/strapi";
 import { useTranslation } from "react-i18next";
-import { useCart } from "@/features/cart/CartContext";
+import { useCart } from "@/features/cart";
 import {
   Dialog,
   DialogContent,
@@ -114,9 +114,11 @@ export default function QuickViewModal({
       return;
     }
 
+    const numericId = typeof product.id === "number" ? product.id : Number(product.id);
+
     addItem({
       id: `${product.id}_${selectedSize}`,
-      productId: product.id,
+      productId: Number.isFinite(numericId) ? numericId : 0,
       name: productData.name ?? "",
       image: thumbnail || mainImage || "",
       price: productData.price ?? 0,

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAdmin } from "@/features/admin/AdminContext";
+import { useAdmin } from "@/features/admin/hooks/useAdmin";
 import ProtectedRoute from "@/features/admin/components/ProtectedRoute";
 import { Coupon } from "@/types/strapi";
 import { Button } from "@/components/ui/button";
@@ -30,6 +30,7 @@ import {
 } from "@/components/ui/dialog";
 import { Plus, ArrowLeft, Trash2, Edit } from "lucide-react";
 import ThemeToggle from "@/features/admin/components/ThemeToggle";
+import toast from "react-hot-toast";
 
 function AdminCouponsContent() {
   const navigate = useNavigate();
@@ -63,13 +64,19 @@ function AdminCouponsContent() {
       applicableProductIds: form.applicableProductIds?.filter(Boolean),
     };
     if (!normalized.code || normalized.value <= 0) return;
-    if (editing) {
-      updateCoupon(editing.code, normalized);
-    } else {
-      addCoupon(normalized);
+    try {
+      if (editing) {
+        updateCoupon(editing.code, normalized);
+        toast.success("تم تحديث الكوبون");
+      } else {
+        addCoupon(normalized);
+        toast.success("تم إضافة الكوبون");
+      }
+      setIsDialogOpen(false);
+      setEditing(null);
+    } catch (error: any) {
+      toast.error(error?.message || "فشل حفظ الكوبون");
     }
-    setIsDialogOpen(false);
-    setEditing(null);
   };
 
   return (

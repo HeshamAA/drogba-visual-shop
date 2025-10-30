@@ -1,3 +1,3 @@
-// Re-export all admin components, hooks, and utilities
-export * from './AdminContext';
-export * from './api/admin';
+// Re-export admin utilities
+export * from "./api/admin";
+export { useAdmin } from "./hooks/useAdmin";

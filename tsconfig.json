@@ -15,7 +15,8 @@
       "@/shared/*": ["./src/shared/*"],
       "@/features/*": ["./src/features/*"],
       "@/api/*": ["./src/api/*"],
-      "@/contexts/*": ["./src/contexts/*"]
+      "@/contexts/*": ["./src/contexts/*"],
+      "@/public/*": ["./public/*"],
     },
     "noImplicitAny": false,
     "noUnusedParameters": false,

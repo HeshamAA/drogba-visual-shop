@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useAdmin } from "@/features/admin/AdminContext";
+import { useAdmin } from "@/features/admin/hooks/useAdmin";
 import { useAuth } from "@/features/auth/hooks/useAuth";
 import ThemeToggle from "@/features/admin/components/ThemeToggle";
 import ProtectedRoute from "@/features/admin/components/ProtectedRoute";
@@ -22,7 +22,10 @@ function AdminDashboardContent() {
   };
 
   const pendingOrders = orders.filter((o) => o.status === "pending").length;
-  const totalRevenue = orders.reduce((sum, order) => sum + order.totalPrice, 0);
+  const totalRevenue = orders.reduce(
+    (sum, order) => sum + (order.total_price ?? 0),
+    0
+  );
 
   if (loading) {
     return (

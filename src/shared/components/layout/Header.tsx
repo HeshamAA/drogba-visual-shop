@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { ShoppingCart, Globe, Moon, Sun, Menu, X } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
-import { useCart } from "@/features/cart/CartContext";
+import { useCart } from "@/features/cart";
 import { useState, useEffect } from "react";
 import {
   Sheet,
@@ -11,6 +11,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/shared/components/ui/sheet";
+import { loadString, saveString } from "@/shared/utils/storage";
 
 export default function Header() {
   const { t, i18n } = useTranslation();
@@ -19,8 +20,7 @@ export default function Header() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    const savedTheme =
-      (localStorage.getItem("drogba-theme") as "light" | "dark") || "light";
+    const savedTheme = (loadString("drogba-theme", "light") as "light" | "dark") || "light";
     setTheme(savedTheme);
     document.documentElement.classList.toggle("dark", savedTheme === "dark");
   }, []);
@@ -33,7 +33,7 @@ export default function Header() {
   const toggleTheme = () => {
     const newTheme = theme === "light" ? "dark" : "light";
     setTheme(newTheme);
-    localStorage.setItem("drogba-theme", newTheme);
+    saveString("drogba-theme", newTheme);
     document.documentElement.classList.toggle("dark", newTheme === "dark");
   };
 

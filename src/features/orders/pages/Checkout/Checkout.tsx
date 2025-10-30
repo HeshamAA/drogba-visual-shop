@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { useCart } from "@/features/cart/CartContext";
+import { useCart, CASH_ON_DELIVERY_SHIPPING_FEE } from "@/features/cart";
 import { useOrderSubmission } from "@/features/orders/hooks/useOrders";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,8 +10,6 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import toast from "react-hot-toast";
 import { Copy, Loader2 } from "lucide-react";
 import type { PaymentMethod } from "@/types/strapi";
-import { CASH_ON_DELIVERY_SHIPPING_FEE } from "@/features/cart/CartContext";
-
 const VODAFONE_CASH_NUMBER = "01001234567";
 const SHIPPING_FEE = CASH_ON_DELIVERY_SHIPPING_FEE;
 

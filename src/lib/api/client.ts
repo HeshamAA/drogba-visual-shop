@@ -1,10 +1,11 @@
-import axios, {
+import axios, { 
   AxiosError,
   AxiosHeaders,
   AxiosInstance,
   AxiosRequestConfig,
   AxiosResponse,
 } from "axios";
+import { loadString } from "@/shared/utils/storage";
 
 const RAW_BASE_URL =
   (import.meta as any).env?.VITE_STRAPI_URL || "http://localhost:1337";
@@ -19,7 +20,7 @@ export const apiClient: AxiosInstance = axios.create({
 });
 
 apiClient.interceptors.request.use((config) => {
-  const token = typeof window !== "undefined" ? localStorage.getItem("admin_token") : null;
+  const token = loadString("admin_token");
   if (token) {
     const headers = config.headers
       ? AxiosHeaders.from(config.headers)

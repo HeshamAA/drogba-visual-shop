@@ -1,6 +1,14 @@
-import { useState } from "react";
+import { useCallback } from "react";
+import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import { Order, OrderItem, PaymentMethod } from "@/types/strapi";
-import { useCreateOrderMutation } from "@/lib/api/strapiApi";
+import {
+  selectCurrentOrder,
+  selectOrderError,
+  selectOrderLoading,
+  selectOrderSuccess,
+  submitOrder as submitOrderThunk,
+  clearOrderState,
+} from "@/features/orders/store/ordersSlice";
 
 interface CreateOrderData {
   customer_name: string;
@@ -32,6 +40,8 @@ interface UseOrdersReturn {
   createOrder: (orderData: CreateOrderData) => Promise<Order | null>;
   loading: boolean;
   error: string | null;
+  currentOrder: Order | null;
+  reset: () => void;
 }
 
 /**
@@ -39,24 +49,30 @@ interface UseOrdersReturn {
  * Handles order creation and related operations
  */
 export const useOrders = (): UseOrdersReturn => {
-  const [createOrderApi, { isLoading: loading, error }] =
-    useCreateOrderMutation();
+  const dispatch = useAppDispatch();
+  const loading = useAppSelector(selectOrderLoading);
+  const error = useAppSelector(selectOrderError);
+  const currentOrder = useAppSelector(selectCurrentOrder);
 
-  const createOrder = async (
-    orderData: CreateOrderData
-  ): Promise<Order | null> => {
-    const order = await createOrderApi(toOrderPayload(orderData)).unwrap();
-    return order as unknown as Order;
-  };
+  const createOrder = useCallback(
+    async (orderData: CreateOrderData): Promise<Order | null> => {
+      const payload = toOrderPayload(orderData);
+      const result = await dispatch(submitOrderThunk(payload)).unwrap();
+      return result;
+    },
+    [dispatch]
+  );
+
+  const reset = useCallback(() => {
+    dispatch(clearOrderState());
+  }, [dispatch]);
 
   return {
     createOrder,
     loading,
-    error: error
-      ? "status" in (error as any)
-        ? String((error as any).status)
-        : "Error"
-      : null,
+    error,
+    currentOrder,
+    reset,
   };
 };
 
@@ -65,6 +81,7 @@ interface UseOrderSubmissionReturn {
   loading: boolean;
   error: string | null;
   success: boolean;
+  reset: () => void;
 }
 
 /**
@@ -72,28 +89,29 @@ interface UseOrderSubmissionReturn {
  * Provides a cleaner interface for checkout flow
  */
 export const useOrderSubmission = (): UseOrderSubmissionReturn => {
-  const [createOrderApi, { isLoading: loading, error }] =
-    useCreateOrderMutation();
-  const [success, setSuccess] = useState(false);
+  const dispatch = useAppDispatch();
+  const loading = useAppSelector(selectOrderLoading);
+  const error = useAppSelector(selectOrderError);
+  const success = useAppSelector(selectOrderSuccess);
 
-  const submitOrder = async (orderData: CreateOrderData): Promise<boolean> => {
-    setSuccess(false);
-    const order = await createOrderApi(toOrderPayload(orderData)).unwrap();
-    if (order) {
-      setSuccess(true);
-      return true;
-    }
-    return false;
-  };
+  const submitOrder = useCallback(
+    async (orderData: CreateOrderData): Promise<boolean> => {
+      const payload = toOrderPayload(orderData);
+      const result = await dispatch(submitOrderThunk(payload)).unwrap();
+      return Boolean(result);
+    },
+    [dispatch]
+  );
+
+  const reset = useCallback(() => {
+    dispatch(clearOrderState());
+  }, [dispatch]);
 
   return {
     submitOrder,
     loading,
-    error: error
-      ? "status" in (error as any)
-        ? String((error as any).status)
-        : "Error"
-      : null,
+    error,
     success,
+    reset,
   };
 };
