@@ -1,7 +1,4 @@
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { useAdmin } from "@/features/admin/hooks/useAdmin";
 import ProductsTable from "@/features/admin/components/ProductsTable";
 import ProductForm from "@/features/admin/components/ProductForm";
 import {
@@ -11,60 +8,21 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Plus, ArrowLeft } from "lucide-react";
-import toast from "react-hot-toast";
-import { Product } from "@/types/strapi";
-import { loadString } from "@/shared/utils/storage";
+import { useAdminProducts } from "@/features/admin/hooks/useAdminProducts";
 
 export default function AdminProducts() {
-  const navigate = useNavigate();
-  const { products, addProduct, updateProduct, deleteProduct } = useAdmin();
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-
-  useEffect(() => {
-    const isAuthenticated = loadString("admin_authenticated");
-    if (!isAuthenticated) {
-      navigate("/admin/login");
-    }
-  }, [navigate]);
-
-  const handleSave = async (product: Product) => {
-    try {
-      if (editingProduct) {
-        await updateProduct(editingProduct.id, product);
-        toast.success("تم تحديث المنتج بنجاح");
-      } else {
-        await addProduct(product);
-        toast.success("تم إضافة المنتج بنجاح");
-      }
-      setIsDialogOpen(false);
-      setEditingProduct(null);
-    } catch (error: any) {
-      toast.error(error?.message || "فشل حفظ المنتج");
-    }
-  };
-
-  const handleEdit = (product: Product) => {
-    setEditingProduct(product);
-    setIsDialogOpen(true);
-  };
-
-  const handleDelete = async (id: number) => {
-    if (!window.confirm("هل أنت متأكد من حذف هذا المنتج؟")) {
-      return;
-    }
-    try {
-      await deleteProduct(id);
-      toast.success("تم حذف المنتج بنجاح");
-    } catch (error: any) {
-      toast.error(error?.message || "فشل حذف المنتج");
-    }
-  };
-
-  const handleAddNew = () => {
-    setEditingProduct(null);
-    setIsDialogOpen(true);
-  };
+  const {
+    products,
+    isDialogOpen,
+    editingProduct,
+    setIsDialogOpen,
+    handleSave,
+    handleEdit,
+    handleDelete,
+    handleAddNew,
+    handleCancel,
+    goBackToDashboard,
+  } = useAdminProducts();
 
   return (
     <div className="min-h-screen bg-muted/30">
@@ -75,7 +33,7 @@ export default function AdminProducts() {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => navigate("/admin/dashboard")}
+                onClick={goBackToDashboard}
               >
                 <ArrowLeft className="w-5 h-5" />
               </Button>
@@ -107,10 +65,7 @@ export default function AdminProducts() {
           <ProductForm
             product={editingProduct}
             onSave={handleSave}
-            onCancel={() => {
-              setIsDialogOpen(false);
-              setEditingProduct(null);
-            }}
+            onCancel={handleCancel}
           />
         </DialogContent>
       </Dialog>

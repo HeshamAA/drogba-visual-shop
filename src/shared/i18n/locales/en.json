@@ -136,6 +136,11 @@
   "products": {
     "noProducts": "No products found."
   },
+  "notFound": {
+    "title": "Page not found",
+    "description": "The page you are looking for might have been removed or temporarily unavailable.",
+    "backToHome": "Back to home"
+  },
   "sort": {
     "placeholder": "Sort by",
     "newest": "Newest",

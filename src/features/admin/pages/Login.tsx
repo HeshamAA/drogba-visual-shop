@@ -1,5 +1,3 @@
-import { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -10,53 +8,19 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
 import ThemeToggle from "@/features/admin/components/ThemeToggle";
 import { Lock } from "lucide-react";
-import { useAuth } from "@/features/auth/hooks/useAuth";
+import { useAdminLogin } from "@/features/admin/hooks/useAdminLogin";
 
 export default function AdminLogin() {
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { toast } = useToast();
-  const { isAuthenticated, login } = useAuth();
-
-  // If already authenticated, redirect to dashboard
-  useEffect(() => {
-    if (isAuthenticated) {
-      const from =
-        (location.state as any)?.from?.pathname || "/admin/dashboard";
-      navigate(from, { replace: true });
-    }
-  }, [isAuthenticated, navigate, location]);
-
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    try {
-      await login(username, password);
-      toast({
-        title: "تم تسجيل الدخول بنجاح",
-        description: "مرحباً بك في لوحة التحكم",
-      });
-
-      const from =
-        (location.state as any)?.from?.pathname || "/admin/dashboard";
-      navigate(from, { replace: true });
-    } catch (error: any) {
-      toast({
-        title: "خطأ في تسجيل الدخول",
-        description: error.message || "اسم المستخدم أو كلمة المرور غير صحيحة",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const {
+    username,
+    password,
+    isLoading,
+    onUsernameChange,
+    onPasswordChange,
+    handleSubmit,
+  } = useAdminLogin();
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-muted/30 relative">
@@ -76,7 +40,7 @@ export default function AdminLogin() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleLogin} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="username">اسم المستخدم</Label>
               <Input
@@ -84,7 +48,7 @@ export default function AdminLogin() {
                 type="text"
                 placeholder="admin"
                 value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                onChange={onUsernameChange}
                 required
               />
             </div>
@@ -95,7 +59,7 @@ export default function AdminLogin() {
                 type="password"
                 placeholder="••••••••"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={onPasswordChange}
                 required
               />
             </div>

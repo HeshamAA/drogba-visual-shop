@@ -17,85 +17,27 @@ import {
   SelectValue,
 } from "@/shared/components/ui/select";
 import { Input } from "@/shared/components/ui/input";
+import { useAdminOrders } from "@/features/admin/hooks/useAdminOrders";
 
 function AdminOrdersContent() {
-  const navigate = useNavigate();
-  const { orders, updateOrderStatus, loading, refetch } = useAdmin();
-  const [statusFilter, setStatusFilter] = useState<string>("all");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [isUpdating, setIsUpdating] = useState(false);
+  const {
+    orders,
+    filteredOrders,
+    statusFilter,
+    setStatusFilter,
+    searchQuery,
+    setSearchQuery,
+    stats,
+    loading,
+    isUpdating,
+    handleUpdateStatus,
+    exportOrders,
+    refetch,
+    goBackToDashboard,
+    showInitialLoading,
+  } = useAdminOrders();
 
-  const handleUpdateStatus = async (orderId: number, newStatus: string) => {
-    setIsUpdating(true);
-    try {
-      await updateOrderStatus(String(orderId), newStatus as any);
-      toast.success("تم تحديث حالة الطلب بنجاح");
-      await refetch();
-    } catch (error: any) {
-      console.error("Error updating order status:", error);
-      toast.error(error.message || "فشل في تحديث حالة الطلب");
-    } finally {
-      setIsUpdating(false);
-    }
-  };
-
-  // Filter orders based on status and search
-  const filteredOrders = orders.filter((order) => {
-    const matchesStatus =
-      statusFilter === "all" || order.status === statusFilter;
-    const matchesSearch =
-      searchQuery === "" ||
-      String(order.id ?? "").includes(searchQuery) ||
-      order.customer_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (order.customer_phone ?? order.phone ?? "")
-        .toLowerCase()
-        .includes(searchQuery.toLowerCase());
-
-    return matchesStatus && matchesSearch;
-  });
-
-  // Calculate statistics
-  const stats = {
-    total: orders.length,
-    pending: orders.filter((o) => o.status === "pending").length,
-    confirmed: orders.filter((o) => o.status === "confirmed").length,
-    shipped: orders.filter((o) => o.status === "shipped").length,
-    delivered: orders.filter((o) => o.status === "delivered").length,
-    totalRevenue: orders
-      .filter((o) => o.status === "delivered")
-      .reduce((sum, order) => sum + (order.total_price || 0), 0),
-  };
-
-  const exportOrders = () => {
-    try {
-      const csvContent = [
-        ["ID", "العميل", "الهاتف", "الإجمالي", "الحالة", "التاريخ"],
-        ...filteredOrders.map((order) => [
-          order.id ?? "",
-          order.customer_name ?? "",
-          order.customer_phone ?? order.phone ?? "",
-          order.total_price ?? 0,
-          order.status ?? "",
-          order.createdAt ? new Date(order.createdAt).toLocaleDateString("ar-EG") : "",
-        ]),
-      ]
-        .map((row) => row.join(","))
-        .join("\n");
-
-      const blob = new Blob(["\ufeff" + csvContent], {
-        type: "text/csv;charset=utf-8;",
-      });
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-      link.download = `orders-${new Date().toISOString().split("T")[0]}.csv`;
-      link.click();
-      toast.success("تم تصدير الطلبات بنجاح");
-    } catch (error) {
-      toast.error("فشل في تصدير الطلبات");
-    }
-  };
-
-  if (loading && orders.length === 0) {
+  if (showInitialLoading) {
     return (
       <div className="min-h-screen bg-muted/30 flex items-center justify-center">
         <div className="text-center">
@@ -115,7 +57,7 @@ function AdminOrdersContent() {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => navigate("/admin/dashboard")}
+                onClick={goBackToDashboard}
               >
                 <ArrowLeft className="w-5 h-5" />
               </Button>

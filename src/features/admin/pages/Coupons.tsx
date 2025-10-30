@@ -1,8 +1,4 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useAdmin } from "@/features/admin/hooks/useAdmin";
 import ProtectedRoute from "@/features/admin/components/ProtectedRoute";
-import { Coupon } from "@/types/strapi";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -30,54 +26,23 @@ import {
 } from "@/components/ui/dialog";
 import { Plus, ArrowLeft, Trash2, Edit } from "lucide-react";
 import ThemeToggle from "@/features/admin/components/ThemeToggle";
-import toast from "react-hot-toast";
+import { useAdminCoupons } from "@/features/admin/hooks/useAdminCoupons";
 
 function AdminCouponsContent() {
-  const navigate = useNavigate();
-  const { coupons, addCoupon, updateCoupon, deleteCoupon, products } =
-    useAdmin();
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editing, setEditing] = useState<Coupon | null>(null);
-  const [form, setForm] = useState<Coupon>({
-    code: "",
-    type: "percent",
-    value: 10,
-    active: true,
-  });
-
-  const openCreate = () => {
-    setEditing(null);
-    setForm({ code: "", type: "percent", value: 10, active: true });
-    setIsDialogOpen(true);
-  };
-
-  const openEdit = (coupon: Coupon) => {
-    setEditing(coupon);
-    setForm(coupon);
-    setIsDialogOpen(true);
-  };
-
-  const handleSave = () => {
-    const normalized: Coupon = {
-      ...form,
-      code: form.code.trim().toUpperCase(),
-      applicableProductIds: form.applicableProductIds?.filter(Boolean),
-    };
-    if (!normalized.code || normalized.value <= 0) return;
-    try {
-      if (editing) {
-        updateCoupon(editing.code, normalized);
-        toast.success("تم تحديث الكوبون");
-      } else {
-        addCoupon(normalized);
-        toast.success("تم إضافة الكوبون");
-      }
-      setIsDialogOpen(false);
-      setEditing(null);
-    } catch (error: any) {
-      toast.error(error?.message || "فشل حفظ الكوبون");
-    }
-  };
+  const {
+    coupons,
+    products,
+    isDialogOpen,
+    editing,
+    form,
+    openCreate,
+    openEdit,
+    handleSave,
+    handleDelete,
+    handleFormChange,
+    setIsDialogOpen,
+    goBackToDashboard,
+  } = useAdminCoupons();
 
   return (
     <div className="min-h-screen bg-muted/30">
@@ -88,7 +53,7 @@ function AdminCouponsContent() {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => navigate("/admin/dashboard")}
+                onClick={goBackToDashboard}
               >
                 <ArrowLeft className="w-5 h-5" />
               </Button>
@@ -163,7 +128,7 @@ function AdminCouponsContent() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          onClick={() => deleteCoupon(c.code)}
+                          onClick={() => handleDelete(c.code)}
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>
@@ -191,9 +156,7 @@ function AdminCouponsContent() {
               <Input
                 id="code"
                 value={form.code}
-                onChange={(e) =>
-                  setForm({ ...form, code: e.target.value.toUpperCase() })
-                }
+                onChange={(e) => handleFormChange("code", e.target.value.toUpperCase())}
                 placeholder="DROG10"
               />
             </div>
@@ -203,9 +166,7 @@ function AdminCouponsContent() {
                 <Label>النوع</Label>
                 <Select
                   value={form.type}
-                  onValueChange={(v: "percent" | "fixed") =>
-                    setForm({ ...form, type: v })
-                  }
+                  onValueChange={(v: "percent" | "fixed") => handleFormChange("type", v)}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -221,9 +182,7 @@ function AdminCouponsContent() {
                 <Input
                   type="number"
                   value={form.value}
-                  onChange={(e) =>
-                    setForm({ ...form, value: Number(e.target.value) })
-                  }
+                  onChange={(e) => handleFormChange("value", Number(e.target.value))}
                   placeholder={form.type === "percent" ? "10" : "50"}
                 />
               </div>
@@ -236,13 +195,13 @@ function AdminCouponsContent() {
               <Input
                 value={(form.applicableProductIds || []).join(",")}
                 onChange={(e) =>
-                  setForm({
-                    ...form,
-                    applicableProductIds: e.target.value
+                  handleFormChange(
+                    "applicableProductIds",
+                    e.target.value
                       .split(",")
                       .map((s) => parseInt(s.trim(), 10))
-                      .filter((n) => !isNaN(n)),
-                  })
+                      .filter((n) => !Number.isNaN(n)) || [],
+                  )
                 }
                 placeholder="1,2,3"
               />
