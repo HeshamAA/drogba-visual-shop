@@ -2,57 +2,36 @@ import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
 import { useCategories } from "@/features/products/hooks/useCategories";
-import { useEffect, useRef, useState } from "react";
+import { useMemo, useRef } from "react";
 import { getImageUrl } from "@/lib/strapi";
+import type { Category } from "@/types/strapi";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Autoplay, Navigation, Pagination } from "swiper/modules";
+import type { Swiper as SwiperInstance } from "swiper";
+import "swiper/css";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
 
 export default function CategoriesSpotlight() {
   const { t } = useTranslation();
   const { categories, loading } = useCategories();
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const scrollIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const prevRef = useRef<HTMLButtonElement | null>(null);
+  const nextRef = useRef<HTMLButtonElement | null>(null);
 
-  // Duplicate categories for infinite scroll
-  const duplicatedCategories =
-    categories.length > 0 ? [...categories, ...categories, ...categories] : [];
-
-  // Auto-scroll effect
-  useEffect(() => {
-    if (categories.length === 0 || loading) return;
-
-    scrollIntervalRef.current = setInterval(() => {
-      setCurrentIndex((prevIndex) => {
-        if (prevIndex >= categories.length - 1) {
-          return 0;
+  const translateCategoryName = useMemo(
+    () =>
+      (slugValue?: string | null, fallback?: string) => {
+        if (!slugValue) {
+          return fallback ?? "";
         }
-        return prevIndex + 1;
-      });
-    }, 4000); // Change slide every 4 seconds
-
-    return () => {
-      if (scrollIntervalRef.current) {
-        clearInterval(scrollIntervalRef.current);
-      }
-    };
-  }, [categories.length, loading]);
-
-  // Manual navigation
-  const goToSlide = (index: number) => {
-    setCurrentIndex(index);
-  };
-
-  const nextSlide = () => {
-    setCurrentIndex((prevIndex) =>
-      prevIndex >= categories.length - 1 ? 0 : prevIndex + 1
-    );
-  };
-
-  const prevSlide = () => {
-    setCurrentIndex((prevIndex) =>
-      prevIndex <= 0 ? categories.length - 1 : prevIndex - 1
-    );
-  };
+        const normalizedSlug = slugValue.toString().toLowerCase();
+        const defaultText = fallback ?? slugValue;
+        return t(`categoryNames.${normalizedSlug}`, { defaultValue: defaultText });
+      },
+    [t]
+  );
 
   if (loading) {
     return (
@@ -95,54 +74,77 @@ export default function CategoriesSpotlight() {
 
       {/* Carousel Container */}
       <div className="relative">
-        {/* Navigation Buttons */}
         <Button
+          ref={prevRef}
           variant="outline"
           size="icon"
           className="absolute left-0 top-1/2 -translate-y-1/2 z-10 rounded-full shadow-lg hover:shadow-xl transition-all"
-          onClick={prevSlide}
         >
           <ChevronLeft className="h-6 w-6" />
         </Button>
 
         <Button
+          ref={nextRef}
           variant="outline"
           size="icon"
           className="absolute right-0 top-1/2 -translate-y-1/2 z-10 rounded-full shadow-lg hover:shadow-xl transition-all"
-          onClick={nextSlide}
         >
           <ChevronRight className="h-6 w-6" />
         </Button>
 
-        {/* Carousel */}
-        <div className="overflow-hidden">
-          <motion.div
-            className="flex gap-6"
-            animate={{
-              x: `-${currentIndex * (100 / 3)}%`,
-            }}
-            transition={{
-              duration: 0.6,
-              ease: "easeInOut",
-            }}
-          >
-            {duplicatedCategories.map((category, index) => (
-              <div
-                key={`${category.id}-${index}`}
-                className="flex-shrink-0 w-full md:w-1/3"
-              >
+        <Swiper
+          modules={[Navigation, Pagination, Autoplay]}
+          spaceBetween={24}
+          slidesPerView={1}
+          loop={categories.length > 3}
+          autoplay={{ delay: 4000, disableOnInteraction: false }}
+          breakpoints={{
+            640: { slidesPerView: 1.2 },
+            768: { slidesPerView: 2 },
+            1024: { slidesPerView: 3 },
+          }}
+          pagination={{ clickable: true }}
+          navigation={{ prevEl: prevRef.current, nextEl: nextRef.current }}
+          onBeforeInit={(swiper) => {
+            const navigation = swiper.params.navigation;
+            if (typeof navigation !== "boolean" && navigation) {
+              navigation.prevEl = prevRef.current;
+              navigation.nextEl = nextRef.current;
+            }
+          }}
+          onSwiper={(swiper: SwiperInstance) => {
+            setTimeout(() => {
+              if (swiper.params.navigation && swiper.navigation) {
+                swiper.navigation.init();
+                swiper.navigation.update();
+              }
+            });
+          }}
+          className="pb-12"
+        >
+          {categories.map((category: Category) => {
+            const attrs = category.attributes;
+            const slug = attrs?.slug ?? "";
+            const displayName = translateCategoryName(
+              slug,
+              attrs?.name ?? slug
+            );
+
+            return (
+              <SwiperSlide key={category.id ?? slug}>
                 <Link
-                  to={`/products?category=${category.slug}`}
+                  to={`/products?category=${slug}`}
                   className="group block"
                 >
                   <div className="relative aspect-[3/4] overflow-hidden rounded-2xl border-2 border-transparent group-hover:border-primary transition-all shadow-lg hover:shadow-xl">
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent z-10" />
 
-                    {/* Category Image or default */}
                     <div className="w-full h-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
                       <motion.img
-                        src={getImageUrl(category.category_image?.url)}
-                        alt={category.name}
+                        src={getImageUrl(
+                          attrs?.category_image?.data?.attributes?.url ?? ""
+                        )}
+                        alt={displayName}
                         className="absolute inset-0 w-full h-full object-cover"
                         whileHover={{ scale: 1.05 }}
                         transition={{ duration: 0.4 }}
@@ -152,7 +154,7 @@ export default function CategoriesSpotlight() {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent z-10" />
                     <div className="absolute bottom-0 left-0 right-0 p-8 z-20">
                       <h3 className="text-white text-2xl md:text-3xl font-bold mb-2">
-                        {category.name}
+                        {displayName}
                       </h3>
                       <span className="text-primary text-sm font-semibold uppercase tracking-wider inline-flex items-center gap-1">
                         {t("common.shopNow", "تسوق الآن")}
@@ -170,26 +172,10 @@ export default function CategoriesSpotlight() {
                     </div>
                   </div>
                 </Link>
-              </div>
-            ))}
-          </motion.div>
-        </div>
-
-        {/* Dots Indicator */}
-        <div className="flex justify-center gap-2 mt-8">
-          {categories.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => goToSlide(index)}
-              className={`h-2 rounded-full transition-all ${
-                index === currentIndex
-                  ? "w-8 bg-primary"
-                  : "w-2 bg-muted hover:bg-primary/50"
-              }`}
-              aria-label={`Go to slide ${index + 1}`}
-            />
-          ))}
-        </div>
+              </SwiperSlide>
+            );
+          })}
+        </Swiper>
       </div>
     </section>
   );

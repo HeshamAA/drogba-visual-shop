@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { Product } from "@/types/strapi";
+import { Product, ProductAttributes, ProductSize } from "@/types/strapi";
 import { useTranslation } from "react-i18next";
 import { Eye, ShoppingCart, Heart, Sparkles, TrendingUp } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
@@ -8,6 +8,8 @@ import QuickViewModal from "./QuickViewModal";
 import { motion } from "framer-motion";
 import { getImageUrl } from "@/lib/strapi";
 import { Badge } from "@/shared/components/ui/badge";
+import { useCart } from "@/features/cart/CartContext";
+import toast from "react-hot-toast";
 
 interface ProductCardProps {
   product: Product;
@@ -16,11 +18,12 @@ interface ProductCardProps {
 
 export default function ProductCard({ product, className = "" }: ProductCardProps) {
   const { t } = useTranslation();
+  const { addItem } = useCart();
   const [isHovered, setIsHovered] = useState(false);
   const [showQuickView, setShowQuickView] = useState(false);
   const [isFavorite, setIsFavorite] = useState(false);
 
-  const productData = product.attributes ?? product;
+  const productData: ProductAttributes = (product.attributes ?? product) as ProductAttributes;
 
   const resolveImageUrl = (source?: any): string => {
     if (!source) return "";
@@ -56,6 +59,83 @@ export default function ProductCard({ product, className = "" }: ProductCardProp
   const discountPercentage = hasDiscount 
     ? Math.round(((previousPrice - productPrice) / previousPrice) * 100)
     : 0;
+
+  type NormalizedSize = {
+    value: string;
+    disabled: boolean;
+  };
+
+  const normalizedSizes = useMemo<NormalizedSize[]>(() => {
+    const sizesField = productData.sizes;
+
+    const fallbackSizes: NormalizedSize[] = ["S", "M", "L", "XL"].map((value) => ({
+      value,
+      disabled: false,
+    }));
+
+    if (!sizesField) {
+      return fallbackSizes;
+    }
+
+    if (Array.isArray(sizesField)) {
+      if (sizesField.length === 0) {
+        return fallbackSizes;
+      }
+
+      if (typeof sizesField[0] === "string") {
+        return (sizesField as string[]).map((value) => ({ value, disabled: false }));
+      }
+
+      return (sizesField as ProductSize[])
+        .map((size, index) => ({
+          value: size?.name ?? `size-${index}`,
+          disabled: size?.inStock === false,
+        }))
+        .filter((size) => Boolean(size.value));
+    }
+
+    if (typeof sizesField === "object") {
+      return Object.values(sizesField)
+        .filter((value): value is string => typeof value === "string")
+        .map((value) => ({ value, disabled: false }));
+    }
+
+    return fallbackSizes;
+  }, [productData.sizes]);
+
+  const availableSizes = normalizedSizes.filter((size) => !size.disabled && size.value);
+  const singleSelectableSize = availableSizes.length === 1 ? availableSizes[0].value : null;
+
+  const addItemToCart = (size: string) => {
+    const imageForCart = thumbnailSrc || mainImageSrc || "";
+
+    addItem({
+      id: `${product.id}_${size}`,
+      productId: Number(product.id) || (product.id as number),
+      name: productName,
+      image: imageForCart,
+      price: productPrice,
+      size,
+      quantity: 1,
+    });
+
+    toast.success(`${productName} ${t("product.addToCart")}`);
+  };
+
+  const handleAddToCart = () => {
+    if (availableSizes.length === 0) {
+      toast.error("المقاسات غير متاحة حالياً لهذا المنتج");
+      return;
+    }
+
+    if (!singleSelectableSize) {
+      setShowQuickView(true);
+      toast(t("product.selectSize"));
+      return;
+    }
+
+    addItemToCart(singleSelectableSize);
+  };
 
   return (
     <>
@@ -172,7 +252,7 @@ export default function ProductCard({ product, className = "" }: ProductCardProp
                 className="rounded-xl shadow-xl bg-primary text-primary-foreground hover:bg-primary/90 border-0"
                 onClick={(e) => {
                   e.preventDefault();
-                  // Add to cart logic
+                  handleAddToCart();
                 }}
               >
                 <ShoppingCart className="h-4 w-4" />
@@ -229,15 +309,13 @@ export default function ProductCard({ product, className = "" }: ProductCardProp
                 whileTap={{ scale: 0.95 }}
                 onClick={(e) => {
                   e.preventDefault();
-                  // Add to cart logic
+                  handleAddToCart();
                 }}
                 className="p-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-md hover:shadow-lg"
               >
                 <ShoppingCart className="h-4 w-4" />
               </motion.button>
             </div>
-
-           بن
           </motion.div>
         </Link>
 

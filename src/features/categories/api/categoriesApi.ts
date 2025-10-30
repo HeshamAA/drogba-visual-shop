@@ -17,6 +17,7 @@ const normalizeCategory = (raw: any): Category => {
     attributes: {
       name: attributes?.name ?? "",
       slug: attributes?.slug ?? "",
+      category_image: attributes?.category_image ?? null,
     },
   };
 };

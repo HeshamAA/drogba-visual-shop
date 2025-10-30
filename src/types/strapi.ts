@@ -39,6 +39,12 @@ export interface Category {
   attributes: {
     name: string;
     slug: string;
+    category_image?: {
+      data?: {
+        id: number;
+        attributes: MediaFormat;
+      } | null;
+    };
   };
 }
 
@@ -120,13 +126,19 @@ export interface OrderProductSummary {
   quantity?: number;
 }
 
+export type PaymentMethod =
+  | "cash_on_delivery"
+  | "vodafone_cash"
+  | "cod"
+  | "wallet";
+
 export interface Order {
   id?: number | string;
   customer_name?: string;
   customer_phone?: string;
   phone?: string;
   customer_address?: string;
-  payment_method?: "cod" | "wallet";
+  payment_method?: PaymentMethod;
   order_items?: OrderItem[];
   products?: OrderProductSummary[];
   total_price?: number;

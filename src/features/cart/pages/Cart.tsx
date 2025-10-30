@@ -7,8 +7,15 @@ import { getImageUrl } from "@/lib/strapi";
 
 export default function Cart() {
   const { t } = useTranslation();
-  const { items, removeItem, incrementItem, decrementItem, totalPrice } =
-    useCart();
+  const {
+    items,
+    removeItem,
+    incrementItem,
+    decrementItem,
+    totalPrice,
+    shippingFee,
+    payableTotal,
+  } = useCart();
 
   if (items.length === 0) {
     return (
@@ -104,13 +111,15 @@ export default function Cart() {
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">الشحن</span>
-                <span className="font-semibold">50 {t("product.price")}</span>
+                <span className="font-semibold">
+                  {shippingFee} {t("product.price")}
+                </span>
               </div>
               <div className="border-t pt-2 mt-2">
                 <div className="flex justify-between text-lg font-bold">
                   <span>{t("cart.total")}</span>
                   <span>
-                    {totalPrice + 50} {t("product.price")}
+                    {payableTotal} {t("product.price")}
                   </span>
                 </div>
               </div>

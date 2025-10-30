@@ -1,4 +1,3 @@
-import { MOCK_HOMEPAGE, MOCK_PRODUCTS } from "@/lib/mock-data";
 import HeroSection from "@/features/home/components/HeroSection";
 import FeaturedProducts from "@/features/home/components/FeaturedProducts";
 import CategoriesSpotlight from "@/features/home/components/CategoriesSpotlight";
@@ -8,28 +7,35 @@ import ValueProposition from "@/features/home/components/ValueProposition";
 import BrandStory from "@/features/home/components/BrandStory";
 import CommunitySocialProof from "@/features/home/components/CommunitySocialProof";
 import Newsletter from "@/features/home/components/Newsletter";
+import { useFeaturedProducts, useProducts } from "@/features/products/hooks/useProducts";
+import { useMemo } from "react";
 
 export default function Index() {
-  const homepage = MOCK_HOMEPAGE.attributes;
+  const { featuredProducts } = useFeaturedProducts();
+  const { products } = useProducts({ pageSize: 12 });
 
-  const heroImageUrl = homepage.hero_image_bg.data?.attributes.url || null;
-  const heroVideoUrl = homepage.hero_video_bg.data?.attributes.url || null;
+  const heroHeadline = featuredProducts[0]?.attributes?.name ?? "";
+  const heroImageUrl =
+    featuredProducts[0]?.attributes?.main_image?.data?.attributes?.url || null;
+  const heroVideoUrl = null;
+
+  const newArrivals = useMemo(() => products.slice(0, 4), [products]);
 
   return (
     <div className="min-h-screen bg-app">
       <HeroSection
-        headline={homepage.hero_headline}
+        headline={heroHeadline}
         imageUrl={heroImageUrl}
         videoUrl={heroVideoUrl}
       />
 
-      <FeaturedProducts products={homepage.featured_products.data} />
+      <FeaturedProducts products={featuredProducts} />
 
       <CategoriesSpotlight />
 
       <SpecialOffers />
 
-      <NewArrivals products={MOCK_PRODUCTS} />
+      <NewArrivals products={newArrivals} />
 
       <ValueProposition />
 

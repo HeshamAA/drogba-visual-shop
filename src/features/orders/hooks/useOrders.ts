@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Order, OrderItem } from "@/types/strapi";
+import { Order, OrderItem, PaymentMethod } from "@/types/strapi";
 import { useCreateOrderMutation } from "@/lib/api/strapiApi";
 
 interface CreateOrderData {
@@ -8,7 +8,25 @@ interface CreateOrderData {
   address: string;
   products: OrderItem[];
   total_price: number;
+  payment_method: PaymentMethod;
 }
+
+const toOrderPayload = (orderData: CreateOrderData) => ({
+  customer_name: orderData.customer_name,
+  customer_phone: orderData.phone,
+  phone: orderData.phone,
+  customer_address: orderData.address,
+  total_price: orderData.total_price,
+  payment_method: orderData.payment_method,
+  status: "pending" as const,
+  products: orderData.products.map((item) => ({
+    productId: item.productId,
+    name: item.name,
+    size: item.size,
+    quantity: item.quantity,
+    price: item.price,
+  })),
+});
 
 interface UseOrdersReturn {
   createOrder: (orderData: CreateOrderData) => Promise<Order | null>;
@@ -27,21 +45,7 @@ export const useOrders = (): UseOrdersReturn => {
   const createOrder = async (
     orderData: CreateOrderData
   ): Promise<Order | null> => {
-    const order = await createOrderApi({
-      customer_name: orderData.customer_name,
-      phone: orderData.phone,
-      address: orderData.address,
-      total_price: orderData.total_price,
-      payment_method: "cash_on_delivery",
-      status: "pending",
-      products: orderData.products.map((item) => ({
-        productId: item.productId,
-        name: item.name,
-        size: item.size,
-        quantity: item.quantity,
-        price: item.price,
-      })),
-    }).unwrap();
+    const order = await createOrderApi(toOrderPayload(orderData)).unwrap();
     return order as unknown as Order;
   };
 
@@ -74,21 +78,7 @@ export const useOrderSubmission = (): UseOrderSubmissionReturn => {
 
   const submitOrder = async (orderData: CreateOrderData): Promise<boolean> => {
     setSuccess(false);
-    const order = await createOrderApi({
-      customer_name: orderData.customer_name,
-      phone: orderData.phone,
-      address: orderData.address,
-      total_price: orderData.total_price,
-      payment_method: "cash_on_delivery",
-      status: "pending",
-      products: orderData.products.map((item) => ({
-        productId: item.productId,
-        name: item.name,
-        size: item.size,
-        quantity: item.quantity,
-        price: item.price,
-      })),
-    }).unwrap();
+    const order = await createOrderApi(toOrderPayload(orderData)).unwrap();
     if (order) {
       setSuccess(true);
       return true;

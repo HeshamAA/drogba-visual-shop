@@ -8,7 +8,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import toast from "react-hot-toast";
-import { Loader2 } from "lucide-react";
+import { Copy, Loader2 } from "lucide-react";
+import type { PaymentMethod } from "@/types/strapi";
+import { CASH_ON_DELIVERY_SHIPPING_FEE } from "@/features/cart/CartContext";
+
+const VODAFONE_CASH_NUMBER = "01001234567";
+const SHIPPING_FEE = CASH_ON_DELIVERY_SHIPPING_FEE;
 
 export default function Checkout() {
   const { t } = useTranslation();
@@ -16,11 +21,13 @@ export default function Checkout() {
   const { items, totalPrice, clearCart } = useCart();
   const { submitOrder, loading, error } = useOrderSubmission();
 
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cash_on_delivery");
+  const [isVodafonePaid, setIsVodafonePaid] = useState(false);
+  const [showVodafoneConfirmation, setShowVodafoneConfirmation] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
     address: "",
-    paymentMethod: "cash_on_delivery" as "cash_on_delivery",
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -50,6 +57,7 @@ export default function Checkout() {
     }
 
     // Prepare order data
+    const shippingCost = paymentMethod === "cash_on_delivery" ? SHIPPING_FEE : 0;
     const orderData = {
       customer_name: formData.name,
       phone: formData.phone,
@@ -61,7 +69,8 @@ export default function Checkout() {
         quantity: item.quantity,
         price: item.price,
       })),
-      total_price: totalPrice + 50, // Add shipping cost
+      total_price: totalPrice + shippingCost,
+      payment_method: paymentMethod,
     };
 
     // Submit order to Strapi
@@ -70,7 +79,11 @@ export default function Checkout() {
     if (success) {
       toast.success("تم تأكيد طلبك بنجاح!");
       clearCart();
-      navigate("/thank-you");
+      if (paymentMethod === "vodafone_cash") {
+        navigate("/order-tracking");
+      } else {
+        navigate("/thank-you");
+      }
     } else {
       toast.error(error || "حدث خطأ أثناء تأكيد الطلب");
     }
@@ -133,21 +146,88 @@ export default function Checkout() {
             </div>
           </div>
 
-          <div className="border border-border rounded-lg p-6">
+          <div className="border border-border rounded-lg p-6 space-y-4">
             <h2 className="text-xl font-semibold mb-4">
               {t("checkout.paymentMethod")}
             </h2>
 
-            <div className="flex items-center space-x-2 space-x-reverse">
-              <RadioGroupItem value="cash_on_delivery" id="cod" checked />
-              <Label htmlFor="cod" className="cursor-pointer">
-                {t("checkout.cod")}
-              </Label>
-            </div>
+            <RadioGroup
+              value={paymentMethod}
+              onValueChange={(value) => {
+                const nextMethod = value as PaymentMethod;
+                setPaymentMethod(nextMethod);
+                if (nextMethod !== "vodafone_cash") {
+                  setIsVodafonePaid(false);
+                  setShowVodafoneConfirmation(false);
+                }
+              }}
+            >
+              <div className="flex flex-col gap-4">
+                <div className="flex items-center space-x-2 space-x-reverse">
+                  <RadioGroupItem value="cash_on_delivery" id="cod" />
+                  <Label htmlFor="cod" className="cursor-pointer">
+                    {t("checkout.cod")}
+                  </Label>
+                </div>
 
-            <p className="mt-4 text-sm text-muted-foreground">
-              الدفع عند الاستلام - الطريقة الوحيدة المتاحة حالياً
-            </p>
+                <div className="flex items-center space-x-2 space-x-reverse">
+                  <RadioGroupItem value="vodafone_cash" id="vodafone" />
+                  <Label htmlFor="vodafone" className="cursor-pointer">
+                    دفع بواسطة فودافون كاش
+                  </Label>
+                </div>
+              </div>
+            </RadioGroup>
+
+            {paymentMethod === "cash_on_delivery" ? (
+              <p className="text-sm text-muted-foreground">
+                سيتم إضافة رسوم توصيل قدرها {SHIPPING_FEE} جنيه إلى إجمالي السعر.
+              </p>
+            ) : (
+              <div className="rounded-lg border bg-muted/30 p-4 space-y-3">
+                <p className="text-sm text-muted-foreground">
+                  قم بتحويل إجمالي المبلغ إلى رقم فودافون كاش التالي ثم اضغط "تم".
+                </p>
+                <div className="flex items-center justify-between bg-background border rounded-lg px-3 py-2">
+                  <span className="font-semibold text-lg">
+                    {VODAFONE_CASH_NUMBER}
+                  </span>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="icon"
+                    onClick={() => {
+                      navigator.clipboard
+                        .writeText(VODAFONE_CASH_NUMBER)
+                        .then(() => toast.success("تم نسخ الرقم"))
+                        .catch(() => toast.error("تعذر نسخ الرقم"));
+                    }}
+                    aria-label="Copy Vodafone Cash Number"
+                  >
+                    <Copy className="h-4 w-4" />
+                  </Button>
+                </div>
+
+                <Button
+                  type="button"
+                  variant="secondary"
+                  className="w-full"
+                  onClick={() => {
+                    setIsVodafonePaid(true);
+                    setShowVodafoneConfirmation(true);
+                    toast.success("تم استلام تأكيد الدفع");
+                  }}
+                >
+                  تم الدفع
+                </Button>
+
+                {showVodafoneConfirmation && (
+                  <p className="text-sm text-green-600">
+                    رائع! بعد الضغط على تأكيد الطلب، سنقوم بمتابعة التحويل ونخبرك بحالة الطلب.
+                  </p>
+                )}
+              </div>
+            )}
           </div>
 
           <Button
@@ -155,7 +235,10 @@ export default function Checkout() {
             size="lg"
             variant="gradient"
             className="w-full"
-            disabled={loading}
+            disabled={
+              loading ||
+              (paymentMethod === "vodafone_cash" && !isVodafonePaid)
+            }
           >
             {loading ? (
               <>
@@ -197,13 +280,15 @@ export default function Checkout() {
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">الشحن</span>
-                <span className="font-semibold">50 {t("product.price")}</span>
+                <span className="font-semibold">
+                  {paymentMethod === "cash_on_delivery" ? SHIPPING_FEE : 0} {t("product.price")}
+                </span>
               </div>
               <div className="border-t pt-2">
                 <div className="flex justify-between text-lg font-bold">
                   <span>{t("cart.total")}</span>
                   <span>
-                    {totalPrice + 50} {t("product.price")}
+                    {totalPrice + (paymentMethod === "cash_on_delivery" ? SHIPPING_FEE : 0)} {t("product.price")}
                   </span>
                 </div>
               </div>

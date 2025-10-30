@@ -1,5 +1,7 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { CartItem, CartContextType } from '@/types/cart';
+import { CartItem, CartContextType } from '@/features/cart/types/cart';
+
+export const CASH_ON_DELIVERY_SHIPPING_FEE = 50;
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
@@ -66,6 +68,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     (sum, item) => sum + item.price * item.quantity,
     0
   );
+  const shippingFee = items.length > 0 ? CASH_ON_DELIVERY_SHIPPING_FEE : 0;
+  const payableTotal = totalPrice + shippingFee;
 
   return (
     <CartContext.Provider
@@ -78,6 +82,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
         clearCart,
         totalItems,
         totalPrice,
+        shippingFee,
+        payableTotal,
       }}
     >
       {children}

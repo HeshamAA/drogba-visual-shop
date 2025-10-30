@@ -17,4 +17,6 @@ export interface CartContextType {
   clearCart: () => void;
   totalItems: number;
   totalPrice: number;
+  shippingFee: number;
+  payableTotal: number;
 }
