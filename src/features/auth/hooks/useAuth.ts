@@ -1,20 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
-import { strapiClient } from '@/lib/api/strapi';
+import { authApi, type User } from '@/features/auth/api/auth';
 
-export interface User {
-  id: number;
-  username: string;
-  email: string;
-  role?: {
-    name: string;
-    description?: string;
-    type?: string;
-  };
-  blocked: boolean;
-  confirmed: boolean;
-  createdAt: string;
-  updatedAt: string;
-}
+export type { User };
 
 interface UseAuthReturn {
   user: User | null;
@@ -58,7 +45,7 @@ export function useAuth(): UseAuthReturn {
         throw new Error('Email/username and password are required');
       }
 
-      const { jwt, user } = await strapiClient.auth.login(identifier, password);
+      const { jwt, user } = await authApi.login({ identifier, password });
 
       // Update state and storage
       setToken(jwt);
@@ -67,8 +54,6 @@ export function useAuth(): UseAuthReturn {
       try {
         localStorage.setItem(AUTH_KEY, jwt);
         localStorage.setItem(USER_KEY, JSON.stringify(user));
-        // Set auth token for subsequent requests
-        strapiClient.setAuthToken(jwt);
       } catch (storageError) {
         console.error('Failed to save authentication data:', storageError);
         // Don't fail the login if storage fails, but log it
@@ -103,8 +88,6 @@ export function useAuth(): UseAuthReturn {
     setToken(null);
     localStorage.removeItem(AUTH_KEY);
     localStorage.removeItem(USER_KEY);
-    // Clear auth token from API client
-    strapiClient.setAuthToken(null);
     // Also remove the old admin_authenticated key for backwards compatibility
     localStorage.removeItem("admin_authenticated");
   };
@@ -117,11 +100,8 @@ export function useAuth(): UseAuthReturn {
     }
 
     try {
-      // Set the token for the request
-      strapiClient.setAuthToken(savedToken);
-      
       // Get current user
-      const currentUser = await strapiClient.auth.getMe(savedToken);
+      const currentUser = await authApi.getMe(savedToken);
       
       // Check if user is still authorized
       if (!currentUser || currentUser.blocked) {

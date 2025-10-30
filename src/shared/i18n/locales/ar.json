@@ -26,7 +26,8 @@
   },
   "common": {
     "shopNow": "تسوق الآن",
-    "viewAll": "عرض الكل"
+    "viewAll": "عرض الكل",
+    "retry": "إعادة المحاولة"
   },
   "newsletter": {
     "title": "احصل على خصم 10%",
@@ -108,5 +109,36 @@
   },
   "cta": {
     "shopNow": "تسوق الآن"
+  },
+  "filters": {
+    "title": "فلاتر",
+    "description": "تصفية حسب الفئة واللون والحجم والسعر",
+    "categories": "الفئات",
+    "allCategories": "كل الفئات",
+    "priceRange": "نطاق السعر",
+    "minPrice": "أقل سعر",
+    "maxPrice": "أعلى سعر",
+    "clearFilters": "مسح الفلاتر"
+  },
+  "categoryNames": {
+    "hats": "كابات",
+    "pants": "بناطيل",
+    "shirts": "تيشيرتات",
+    "shoes": "أحذية",
+    "watches": "ساعات",
+    "hoodies": "هوديز"
+  },
+  "errors": {
+    "failedToLoadProducts": "حدث خطأ أثناء تحميل المنتجات."
+  },
+  "products": {
+    "noProducts": "لا توجد منتجات متاحة"
+  },
+  "sort": {
+    "placeholder": "ترتيب حسب",
+    "newest": "الأحدث",
+    "priceLowToHigh": "السعر: من الأقل إلى الأعلى",
+    "priceHighToLow": "السعر: من الأعلى إلى الأقل",
+    "nameAtoZ": "الاسم: من الألف إلى الياء"
   }
 }

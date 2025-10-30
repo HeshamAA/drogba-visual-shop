@@ -2,20 +2,23 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { Product } from "@/types/strapi";
 import { useTranslation } from "react-i18next";
-import { Eye, ArrowRight } from "lucide-react";
+import { Eye, ShoppingCart, Heart, Sparkles, TrendingUp } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import QuickViewModal from "./QuickViewModal";
 import { motion } from "framer-motion";
 import { getImageUrl } from "@/lib/strapi";
+import { Badge } from "@/shared/components/ui/badge";
 
 interface ProductCardProps {
   product: Product;
+  className?: string;
 }
 
-export default function ProductCard({ product }: ProductCardProps) {
+export default function ProductCard({ product, className = "" }: ProductCardProps) {
   const { t } = useTranslation();
   const [isHovered, setIsHovered] = useState(false);
   const [showQuickView, setShowQuickView] = useState(false);
+  const [isFavorite, setIsFavorite] = useState(false);
 
   const productData = product.attributes ?? product;
 
@@ -37,8 +40,7 @@ export default function ProductCard({ product }: ProductCardProps) {
     resolveImageUrl(productData.gallery_images?.data?.[0]?.attributes);
 
   const thumbnailSrc =
-    resolveImageUrl(productData.product_images?.formats?.thumbnail)
-      || mainImageSrc;
+    resolveImageUrl(productData.product_images?.formats?.thumbnail) || mainImageSrc;
 
   const categoryName =
     productData.category?.name ??
@@ -50,118 +52,203 @@ export default function ProductCard({ product }: ProductCardProps) {
   const productPrice = productData.price ?? 0;
   const previousPrice = productData.old_price;
 
+  const hasDiscount = previousPrice && previousPrice > productPrice;
+  const discountPercentage = hasDiscount 
+    ? Math.round(((previousPrice - productPrice) / previousPrice) * 100)
+    : 0;
+
   return (
     <>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         whileInView={{ opacity: 1, y: 0 }}
         viewport={{ once: true }}
-        className="group relative rounded-2xl border border-border bg-surface dark:bg-surface-dark transition-all hover:border-accent/50 hover:shadow-lg"
+        transition={{ duration: 0.4 }}
+        className={`group relative rounded-2xl border border-border bg-card overflow-hidden transition-all hover:border-accent/50 hover:shadow-2xl dark:hover:shadow-accent/10 ${className}`}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
         <Link to={`/products/${productSlug}`} className="block">
-          <div className="relative aspect-[3/4] overflow-hidden rounded-xl bg-secondary">
-            {/* Pulse Badge */}
+          {/* Image Container */}
+          <div className="relative aspect-[3/4] overflow-hidden bg-gradient-to-br from-muted/30 to-muted/10 dark:from-muted/20 dark:to-muted/5">
+            {/* Badges */}
+            <div className="absolute top-3 left-3 right-3 z-20 flex items-start justify-between">
+              <div className="flex flex-col gap-2">
+                {hasDiscount && (
+                  <motion.div
+                    initial={{ scale: 0, rotate: -180 }}
+                    animate={{ scale: 1, rotate: 0 }}
+                    transition={{ type: "spring", stiffness: 200, damping: 10 }}
+                  >
+                    <Badge className="bg-gradient-to-r from-red-500 to-pink-500 text-white border-0 shadow-lg px-2.5 py-1 font-bold">
+                      خصم {discountPercentage}%
+                    </Badge>
+                  </motion.div>
+                )}
+                <motion.div
+                  animate={{
+                    scale: [1, 1.05, 1],
+                    rotate: [0, 5, 0, -5, 0],
+                  }}
+                  transition={{
+                    duration: 3,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                  }}
+                >
+                  <Badge className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white border-0 shadow-lg px-2.5 py-1 font-bold flex items-center gap-1">
+                    <Sparkles className="h-3 w-3" />
+                    جديد
+                  </Badge>
+                </motion.div>
+              </div>
+
+              {/* Favorite Button */}
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={(e) => {
+                  e.preventDefault();
+                  setIsFavorite(!isFavorite);
+                }}
+                className={`p-2 rounded-full backdrop-blur-sm transition-all ${
+                  isFavorite
+                    ? "bg-red-500 text-white shadow-lg"
+                    : "bg-background/80 text-foreground hover:bg-background hover:text-red-500 dark:bg-background/60 dark:hover:bg-background/90"
+                }`}
+              >
+                <Heart
+                  className={`h-4 w-4 transition-all ${isFavorite ? "fill-current" : ""}`}
+                />
+              </motion.button>
+            </div>
+
+            {/* Product Image */}
             <motion.div
-              animate={{
-                scale: [1, 1.1, 1],
-                opacity: [0.7, 1, 0.7],
-              }}
-              transition={{
-                duration: 2,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-              className="absolute top-3 right-3 z-10 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg bg-gradient-to-r from-accent to-accent/80 ring-1 ring-accent/20"
+              className="absolute inset-0 w-full h-full"
+              whileHover={{ scale: 1.08 }}
+              transition={{ duration: 0.6, ease: "easeOut" }}
             >
-              {t("product.new", "جديد")}
+              <img
+                src={thumbnailSrc || mainImageSrc}
+                alt={productName}
+                className="w-full h-full object-cover"
+                loading="lazy"
+              />
             </motion.div>
 
-            {/* Images */}
-            <motion.img
-              src={thumbnailSrc || mainImageSrc}
-              alt={productName}
-              className="absolute inset-0 w-full h-full object-cover"
-              whileHover={{ scale: 1.05 }}
-              transition={{ duration: 0.4 }}
-            />
-
-            {/* Hover Overlay with Actions */}
+            {/* Gradient Overlay on Hover */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: isHovered ? 1 : 0 }}
               transition={{ duration: 0.3 }}
-              className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent flex items-center justify-center gap-3"
+              className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent"
+            />
+
+            {/* Action Buttons on Hover */}
+            <motion.div
+              initial={{ y: 20, opacity: 0 }}
+              animate={{
+                y: isHovered ? 0 : 20,
+                opacity: isHovered ? 1 : 0,
+              }}
+              transition={{ duration: 0.3, ease: "easeOut" }}
+              className="absolute bottom-4 left-4 right-4 z-10 flex items-center justify-center gap-2"
             >
-              <motion.div
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: isHovered ? 0 : 20, opacity: isHovered ? 1 : 0 }}
-                transition={{ delay: 0.1 }}
+              <Button
+                size="sm"
+                variant="secondary"
+                className="flex-1 rounded-xl shadow-xl backdrop-blur-sm bg-background/95 hover:bg-background border-0 font-bold dark:bg-background/90 dark:hover:bg-background"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setShowQuickView(true);
+                }}
               >
-                <Button
-                  size="icon"
-                  variant="secondary"
-                  className="rounded-full shadow-lg"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    setShowQuickView(true);
-                  }}
-                >
-                  <Eye className="h-4 w-4" />
-                </Button>
-              </motion.div>
-              <motion.div
-                initial={{ y: 20, opacity: 0 }}
-                animate={{ y: isHovered ? 0 : 20, opacity: isHovered ? 1 : 0 }}
-                transition={{ delay: 0.15 }}
+                <Eye className="h-4 w-4 mr-2" />
+                معاينة سريعة
+              </Button>
+              <Button
+                size="icon"
+                className="rounded-xl shadow-xl bg-primary text-primary-foreground hover:bg-primary/90 border-0"
+                onClick={(e) => {
+                  e.preventDefault();
+                  // Add to cart logic
+                }}
               >
-                <Button
-                  size="icon"
-                  variant="secondary"
-                  className="rounded-full shadow-lg"
-                  asChild
-                >
-                  <Link to={`/products/${productSlug}`}>
-                    <ArrowRight className="h-4 w-4" />
-                  </Link>
-                </Button>
-              </motion.div>
+                <ShoppingCart className="h-4 w-4" />
+              </Button>
             </motion.div>
           </div>
 
           {/* Product Info */}
           <motion.div
-            className="space-y-1 p-4"
-            initial={{ opacity: 0.8 }}
+            className="p-4 space-y-2.5"
+            initial={{ opacity: 0.9 }}
             whileHover={{ opacity: 1 }}
           >
+            {/* Category */}
             {categoryName && (
-              <span className="inline-block text-[10px] font-semibold tracking-wider uppercase rounded-full px-2 py-1 bg-accent/10 text-accent mb-1">
-                {categoryName}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold tracking-wider uppercase px-2.5 py-1 rounded-lg bg-muted text-muted-foreground">
+                  {categoryName}
+                </span>
+                <div className="flex items-center gap-1 text-xs text-amber-600">
+                  <TrendingUp className="h-3 w-3" />
+                  <span className="font-semibold">رائج</span>
+                </div>
+              </div>
             )}
-            <h3 className="font-semibold text-sm md:text-base line-clamp-1">
+
+            {/* Product Name */}
+            <h3 className="font-bold text-base text-foreground line-clamp-2 leading-snug group-hover:text-foreground/80 transition-colors">
               {productName}
             </h3>
-            <p className="text-sm md:text-base font-bold text-accent flex items-center gap-2">
-              {previousPrice && previousPrice > productPrice ? (
-                <>
-                  <span className="line-through text-muted-foreground text-xs">
-                    {previousPrice} {t("product.price")}
+
+            {/* Price Section */}
+            <div className="flex items-center justify-between pt-1">
+              <div className="flex flex-col gap-1">
+                {hasDiscount ? (
+                  <>
+                    <span className="text-xs line-through text-muted-foreground font-medium">
+                      {previousPrice} جنيه
+                    </span>
+                    <span className="text-xl font-black text-foreground">
+                      {productPrice} جنيه
+                    </span>
+                  </>
+                ) : (
+                  <span className="text-xl font-black text-foreground">
+                    {productPrice} جنيه
                   </span>
-                  <span className="text-primary">
-                    {productPrice} {t("product.price")}
-                  </span>
-                </>
-              ) : (
-                <span>
-                  {productPrice} {t("product.price")}
-                </span>
-              )}
-            </p>
+                )}
+              </div>
+
+              {/* Add to Cart Button (small version) */}
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={(e) => {
+                  e.preventDefault();
+                  // Add to cart logic
+                }}
+                className="p-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-all shadow-md hover:shadow-lg"
+              >
+                <ShoppingCart className="h-4 w-4" />
+              </motion.button>
+            </div>
+
+           بن
           </motion.div>
         </Link>
+
+        {/* Shine Effect on Hover */}
+        <motion.div
+          initial={{ x: "-100%" }}
+          animate={{ x: isHovered ? "200%" : "-100%" }}
+          transition={{ duration: 0.8, ease: "easeInOut" }}
+          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 dark:via-white/10 to-transparent pointer-events-none"
+          style={{ transform: "skewX(-20deg)" }}
+        />
       </motion.div>
 
       <QuickViewModal

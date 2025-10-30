@@ -26,7 +26,8 @@
   },
   "common": {
     "shopNow": "Shop Now",
-    "viewAll": "View All"
+    "viewAll": "View All",
+    "retry": "Retry"
   },
   "newsletter": {
     "title": "Get 10% Off",
@@ -108,5 +109,38 @@
   },
   "cta": {
     "shopNow": "Shop Now"
+  },
+  "filters": {
+    "title": "Filters",
+    "description": "Filter by category, color, size, and price",
+    "categories": "Categories",
+    "allCategories": "All Categories",
+    "priceRange": "Price Range",
+    "min": "Min",
+    "max": "Max",
+    "minPrice": "Min Price",
+    "maxPrice": "Max Price",
+    "clearFilters": "Clear Filters"
+  },
+  "categoryNames": {
+    "hats": "Hats",
+    "pants": "Pants",
+    "shirts": "Shirts",
+    "shoes": "Shoes",
+    "watches": "Watches",
+    "hoodies": "Hoodies"
+  },
+  "errors": {
+    "failedToLoadProducts": "Failed to load products."
+  },
+  "products": {
+    "noProducts": "No products found."
+  },
+  "sort": {
+    "placeholder": "Sort by",
+    "newest": "Newest",
+    "priceLowToHigh": "Price: Low to High",
+    "priceHighToLow": "Price: High to Low",
+    "nameAtoZ": "Name: A to Z"
   }
 }

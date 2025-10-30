@@ -1,9 +1,22 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useCallback } from "react";
+import { useAppDispatch, useAppSelector } from "@/app/hooks";
+import type { Product } from "@/types/strapi";
 import {
-  useGetProductByIdQuery,
-  useGetProductsQuery,
-} from "@/lib/api/strapiApi";
-import type { Product } from "../types";
+  fetchProductById,
+  fetchProducts,
+  fetchFeaturedProducts,
+  fetchProductBySlug,
+  selectProductById,
+  selectProductsError,
+  selectProductsList,
+  selectProductsLoading,
+  selectProductDetailLoading,
+  selectProductDetailError,
+  selectProductBySlug,
+  selectFeaturedProducts,
+  selectFeaturedProductsLoading,
+  selectFeaturedProductsError,
+} from "../store/productsSlice";
 
 interface UseProductsOptions {
   page?: number;
@@ -13,46 +26,86 @@ interface UseProductsOptions {
   enabled?: boolean;
 }
 
+export function useProductBySlug(slug: string) {
+  const dispatch = useAppDispatch();
+  const product = useAppSelector((state) => selectProductBySlug(state, slug));
+  const isLoading = useAppSelector(selectProductDetailLoading);
+  const error = useAppSelector(selectProductDetailError);
+
+  useEffect(() => {
+    if (slug) {
+      dispatch(fetchProductBySlug(slug));
+    }
+  }, [dispatch, slug]);
+
+  return {
+    product: product ?? null,
+    isLoading,
+    error,
+  };
+}
+
 export function useProducts({
-  page = 1,
-  pageSize = 10,
-  filters = {},
-  sort = "createdAt:desc",
   enabled = true,
 }: UseProductsOptions = {}) {
-  const skip = !enabled;
-  const { data, isLoading, error, refetch } = useGetProductsQuery(
-    { page, pageSize, filters, sort },
-    { skip }
-  );
-  const products = useMemo(() => data ?? [], [data]);
+  const dispatch = useAppDispatch();
+  const products = useAppSelector(selectProductsList);
+  const isLoading = useAppSelector(selectProductsLoading);
+  const error = useAppSelector(selectProductsError);
 
-  console.log(products);
+  useEffect(() => {
+    if (enabled) {
+      dispatch(fetchProducts());
+    }
+  }, [dispatch, enabled]);
+
+  const refetch = useCallback(() => {
+    if (enabled) {
+      dispatch(fetchProducts());
+    }
+  }, [dispatch, enabled]);
+
+  const normalizedProducts = useMemo(() => products ?? [], [products]);
+
   return {
-    products,
-    isLoading,
+    products: normalizedProducts,
+    isLoading: enabled ? isLoading : false,
     error,
     refetch,
   };
 }
 
 export function useProduct(id: string | number) {
-  const { data, isLoading, error } = useGetProductByIdQuery(id, { skip: !id });
+  const dispatch = useAppDispatch();
+  const product = useAppSelector((state) => selectProductById(state, id));
+  const isLoading = useAppSelector(selectProductDetailLoading);
+  const error = useAppSelector(selectProductDetailError);
+
+  useEffect(() => {
+    if (id) {
+      dispatch(fetchProductById(id));
+    }
+  }, [dispatch, id]);
+
   return {
-    product: data as Product | null,
+    product: product ?? null,
     isLoading,
     error,
   };
 }
 
 export function useFeaturedProducts(limit = 4) {
-  const { data, isLoading, error } = useGetProductsQuery({
-    page: 1,
-    pageSize: limit,
-    sort: "createdAt:desc",
-  });
+  const dispatch = useAppDispatch();
+  const featuredProducts = useAppSelector(selectFeaturedProducts);
+  const isLoading = useAppSelector(selectFeaturedProductsLoading);
+  const error = useAppSelector(selectFeaturedProductsError);
+
+  useEffect(() => {
+    dispatch(fetchFeaturedProducts(limit));
+  }, [dispatch, limit]);
+
   return {
-    featuredProducts: (data ?? []) as Product[],
+    featuredProducts: featuredProducts ?? [],
     isLoading,
     error,
   };

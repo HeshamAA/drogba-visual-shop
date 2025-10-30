@@ -9,6 +9,10 @@ export type User = {
   email: string;
   username: string;
   role?: Role;
+  blocked: boolean;
+  confirmed: boolean;
+  createdAt: string;
+  updatedAt: string;
 };
 
 const RAW_BASE_URL =

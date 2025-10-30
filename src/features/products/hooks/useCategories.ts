@@ -1,6 +1,16 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useCallback } from "react";
 import { Category } from "@/types/strapi";
-import { useGetCategoriesQuery } from "@/lib/api/strapiApi";
+import { useAppDispatch, useAppSelector } from "@/app/hooks";
+import {
+  fetchCategories,
+  fetchCategoryBySlug,
+  selectCategoriesList,
+  selectCategoriesLoading,
+  selectCategoriesError,
+  selectCategoryBySlug,
+  selectCategoryDetailLoading,
+  selectCategoryDetailError,
+} from "@/features/categories/store/categoriesSlice";
 
 interface UseCategoriesReturn {
   categories: Category[];
@@ -14,12 +24,25 @@ interface UseCategoriesReturn {
  * Handles loading states and error handling
  */
 export const useCategories = (): UseCategoriesReturn => {
-  const { data, isLoading, error, refetch } = useGetCategoriesQuery();
-  const categories = useMemo(() => data ?? [], [data]);
+  const dispatch = useAppDispatch();
+  const categories = useAppSelector(selectCategoriesList);
+  const loading = useAppSelector(selectCategoriesLoading);
+  const error = useAppSelector(selectCategoriesError);
+
+  useEffect(() => {
+    dispatch(fetchCategories());
+  }, [dispatch]);
+
+  const refetch = useCallback(() => {
+    dispatch(fetchCategories());
+  }, [dispatch]);
+
+  const memoizedCategories = useMemo(() => categories ?? [], [categories]);
+
   return {
-    categories: categories as Category[],
-    loading: isLoading,
-    error: error ? ("status" in error ? String(error.status) : "Error") : null,
+    categories: memoizedCategories as Category[],
+    loading,
+    error,
     refetch,
   };
 };
@@ -36,40 +59,29 @@ interface UseCategoryBySlugReturn {
  * @param slug - The category slug to fetch
  */
 export const useCategoryBySlug = (slug: string): UseCategoryBySlugReturn => {
-  const [category, setCategory] = useState<Category | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const dispatch = useAppDispatch();
+  const category = useAppSelector((state) => selectCategoryBySlug(state, slug));
+  const loading = useAppSelector(selectCategoryDetailLoading);
+  const error = useAppSelector(selectCategoryDetailError);
 
-  const fetchCategory = async () => {
-    // Temporary: rely on list query and filter client-side
-    setLoading(true);
-    try {
-      const res = await fetch(
-        `${(import.meta as any).env?.VITE_STRAPI_URL || "http://localhost:1337"}/api/categories?filters[slug][$eq]=${encodeURIComponent(
-          slug
-        )}&populate=*`
-      );
-      const json = await res.json();
-      const list = Array.isArray(json?.data)
-        ? json.data.map((i: any) => ({ id: i.id, ...i.attributes }))
-        : [];
-      setCategory(list[0] ?? null);
-      setError(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to fetch category");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const fetchCategory = useCallback(async () => {
+    if (!slug) return;
+    await dispatch(fetchCategoryBySlug(slug));
+  }, [dispatch, slug]);
 
   useEffect(() => {
-    fetchCategory();
-  }, [slug]);
+    if (slug) {
+      fetchCategory();
+    }
+  }, [fetchCategory, slug]);
 
   return {
-    category,
+    category: category ?? null,
     loading,
     error,
-    refetch: fetchCategory,
+    refetch: () => {
+      if (!slug) return;
+      void fetchCategory();
+    },
   };
 };

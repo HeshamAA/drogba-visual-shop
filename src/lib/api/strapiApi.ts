@@ -6,8 +6,20 @@ const baseUrl =
 
 export const strapiApi = createApi({
   reducerPath: "strapiApi",
-  baseQuery: fetchBaseQuery({ baseUrl: baseUrl.replace(/\/$/, "") + "/api" }),
+  baseQuery: fetchBaseQuery({ 
+    baseUrl: baseUrl.replace(/\/$/, "") + "/api",
+    prepareHeaders: (headers) => {
+      // Add any auth headers if needed
+      const token = localStorage.getItem('admin_token');
+      if (token) {
+        headers.set('Authorization', `Bearer ${token}`);
+      }
+      return headers;
+    },
+  }),
   tagTypes: ["Products", "Categories", "Orders"],
+  keepUnusedDataFor: 300, // Cache for 5 minutes
+  refetchOnMountOrArgChange: 60, // Refetch if data is older than 60 seconds
   endpoints: (builder) => ({
     getProducts: builder.query<
       Product[],
@@ -16,19 +28,19 @@ export const strapiApi = createApi({
         pageSize?: number;
         filters?: Record<string, any>;
         sort?: string;
-      } | void
+      } | undefined
     >({
-      query: (args) => {
-        const page = args?.page ?? 1;
-        const pageSize = args?.pageSize ?? 10;
-        const sort = args?.sort ?? "createdAt:desc";
+      query: (args = {}) => {
+        const page = args.page ?? 1;
+        const pageSize = args.pageSize ?? 10;
+        const sort = args.sort ?? "createdAt:desc";
         const params: Record<string, any> = {
           populate: "*",
           "pagination[page]": page,
           "pagination[pageSize]": pageSize,
           sort,
         };
-        if (args?.filters) Object.assign(params, args.filters);
+        if (args.filters) Object.assign(params, args.filters);
         return { url: "/products", params };
       },
       transformResponse: (response: any) =>

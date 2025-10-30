@@ -1,21 +1,22 @@
 import { configureStore, ThunkAction, Action } from "@reduxjs/toolkit";
-import { strapiApi } from "@/lib/api/strapiApi";
 
-export interface RootState {
-  // Add other slices here as you create them
-}
+import productsReducer from "@/features/products/store/productsSlice";
+import categoriesReducer from "@/features/categories/store/categoriesSlice";
+import ordersReducer from "@/features/orders/store/ordersSlice";
 
 export const store = configureStore({
   reducer: {
-    // Add other reducers here
-    [strapiApi.reducerPath]: strapiApi.reducer,
+    products: productsReducer,
+    categories: categoriesReducer,
+    orders: ordersReducer,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: false,
-    }).concat(strapiApi.middleware),
+    }),
 });
 
+export type RootState = ReturnType<typeof store.getState>;
 export type AppDispatch = typeof store.dispatch;
 export type AppThunk<ReturnType = void> = ThunkAction<
   ReturnType,

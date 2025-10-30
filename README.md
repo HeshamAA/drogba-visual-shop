@@ -1,4 +1,6 @@
-# Welcome to your Lovable project
+# Drogba Visual Shop
+
+Modern e-commerce platform for fashion and lifestyle products.
 
 ## Project info
 
@@ -32,9 +34,23 @@ cd <YOUR_PROJECT_NAME>
 # Step 3: Install the necessary dependencies.
 npm i
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Step 4: Set up environment variables
+# Create a .env file and add:
+# VITE_STRAPI_URL=http://localhost:1337
+
+# Step 5: Start the development server with auto-reloading and an instant preview.
 npm run dev
 ```
+
+## Environment Variables
+
+Create a `.env` file in the root directory with the following:
+
+```env
+VITE_STRAPI_URL=http://localhost:1337
+```
+
+Replace with your Strapi backend URL.
 
 **Edit a file directly in GitHub**
 
