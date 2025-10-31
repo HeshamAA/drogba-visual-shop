@@ -9,8 +9,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Card } from "@/components/ui/card";
-import { Edit, Trash2 } from "lucide-react";
+import { Edit, Trash2, X } from "lucide-react";
 import { getImageUrl } from "@/lib/strapi";
+import { useState } from "react";
 
 interface ProductsTableProps {
   products: Product[];
@@ -23,6 +24,7 @@ export default function ProductsTable({
   onEdit,
   onDelete,
 }: ProductsTableProps) {
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
   return (
     <Card>
       <Table>
@@ -49,8 +51,10 @@ export default function ProductsTable({
             </TableRow>
           ) : (
             products.map((product) => {
-              const imageUrl = product.product_images?.url
-                ? getImageUrl(product.product_images.url)
+              // Get image URL from main_image or product_images
+              const mainImageUrl = product.main_image?.url || product.main_image?.data?.attributes?.url;
+              const imageUrl = mainImageUrl
+                ? getImageUrl(mainImageUrl)
                 : "";
               const colorsField = (product as any).colors;
               const colors = Array.isArray(colorsField)
@@ -65,11 +69,18 @@ export default function ProductsTable({
               return (
                 <TableRow key={product.id}>
                   <TableCell>
-                    <img
-                      src={imageUrl}
-                      alt={product.name}
-                      className="w-50 h-70 object-cover rounded"
-                    />
+                    {imageUrl ? (
+                      <img
+                        src={imageUrl}
+                        alt={product.name}
+                        className="w-16 h-16 object-cover rounded cursor-pointer hover:opacity-80 transition-opacity"
+                        onClick={() => setPreviewImage(imageUrl)}
+                      />
+                    ) : (
+                      <div className="w-16 h-16 bg-muted rounded flex items-center justify-center text-xs text-muted-foreground">
+                        لا توجد صورة
+                      </div>
+                    )}
                   </TableCell>
                   <TableCell className="font-medium">{product.name}</TableCell>
                   <TableCell>
@@ -157,6 +168,31 @@ export default function ProductsTable({
           )}
         </TableBody>
       </Table>
+
+      {/* Image Preview Popup */}
+      {previewImage && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+          onClick={() => setPreviewImage(null)}
+        >
+          <div className="relative max-w-4xl max-h-[90vh] p-4">
+            <Button
+              variant="secondary"
+              size="icon"
+              className="absolute top-6 right-6 z-10"
+              onClick={() => setPreviewImage(null)}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+            <img
+              src={previewImage}
+              alt="Preview"
+              className="max-w-full max-h-[85vh] object-contain rounded-lg"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </div>
+        </div>
+      )}
     </Card>
   );
 }

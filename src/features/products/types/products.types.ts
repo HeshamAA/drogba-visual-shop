@@ -42,6 +42,7 @@ export interface Category {
     name: string;
     slug: string;
     description?: string;
+    category_image?: any;
     createdAt?: string;
     updatedAt?: string;
     publishedAt?: string;
@@ -53,11 +54,17 @@ export interface ProductAttributes {
   slug: string;
   description?: string;
   price: number;
+  old_price?: number;
+  quantity?: number;
   images?: StrapiImageArray;
+  main_image?: any;
+  gallery_images?: any;
+  product_images?: any;
   category?: {
     data?: Category;
   };
   sizes?: ProductSize[];
+  colors?: string[];
   featured?: boolean;
   inStock?: boolean;
   createdAt?: string;

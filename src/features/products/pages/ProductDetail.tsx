@@ -24,9 +24,58 @@ export default function ProductDetail() {
   const { product, isLoading, error } = useProductBySlug(slug || "");
 
   const [selectedSize, setSelectedSize] = useState("");
+  const [selectedColor, setSelectedColor] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
 
+  const productData: ProductAttributes = (product as any)?.attributes
+    ? (product as any).attributes
+    : (product as unknown as ProductAttributes);
+
+  const resolveImageUrl = (source?: any): string => {
+    if (!source) return "";
+    
+    // Try to get the original/largest image first
+    const urlCandidate =
+      source?.url ?? // Original image URL (highest quality)
+      source?.data?.attributes?.url ?? // Strapi v4 format
+      source?.formats?.xlarge?.url ?? // Extra large
+      source?.formats?.large?.url ?? // Large
+      source?.formats?.medium?.url ?? // Medium
+      source?.formats?.small?.url ?? // Small
+      source?.formats?.thumbnail?.url ?? // Thumbnail (last resort)
+      "";
+    return urlCandidate ? getImageUrl(urlCandidate) : "";
+  };
+
+  const allImages: string[] = useMemo(() => {
+    if (!product) return [];
+    
+    const images: string[] = [];
+
+    // Add main image first
+    const mainImg = resolveImageUrl(productData.main_image) || resolveImageUrl(productData.product_images);
+    if (mainImg) {
+      images.push(mainImg);
+    }
+
+    // Add gallery images
+    // Check if gallery_images is directly an array or has .data property
+    const galleryItems = Array.isArray(productData.gallery_images) 
+      ? productData.gallery_images 
+      : (productData.gallery_images?.data ?? []);
+    
+    galleryItems.forEach((item: any) => {
+      const url = resolveImageUrl(item?.attributes ?? item);
+      if (url && url !== mainImg) {
+        images.push(url);
+      }
+    });
+
+    return images;
+  }, [product, productData]);
+
+  // Early returns AFTER all hooks
   if (isLoading) {
     return (
       <div className="container mx-auto px-4 py-16">
@@ -39,41 +88,6 @@ export default function ProductDetail() {
     return <Navigate to="/products" replace />;
   }
 
-  const productData: ProductAttributes = (product as any)?.attributes
-    ? (product as any).attributes
-    : (product as unknown as ProductAttributes);
-
-  const resolveImageUrl = (source?: any): string => {
-    if (!source) return "";
-    const urlCandidate =
-      source?.formats?.large?.url ??
-      source?.formats?.medium?.url ??
-      source?.formats?.thumbnail?.url ??
-      source?.url ??
-      source?.data?.attributes?.url ??
-      "";
-    return urlCandidate ? getImageUrl(urlCandidate) : "";
-  };
-
-  const allImages: string[] = useMemo(() => {
-    const collected = new Set<string>();
-
-    const pushUrl = (value?: string) => {
-      if (!value) return;
-      collected.add(value);
-    };
-
-    pushUrl(resolveImageUrl(productData.product_images));
-    pushUrl(resolveImageUrl(productData.main_image));
-
-    const galleryItems = productData.gallery_images?.data ?? [];
-    galleryItems.forEach((item: any) => {
-      pushUrl(resolveImageUrl(item?.attributes ?? item));
-    });
-
-    return Array.from(collected).filter(Boolean);
-  }, [productData]);
-
   const mainImage = allImages[0] ?? "";
 
   const handleAddToCart = () => {
@@ -82,13 +96,19 @@ export default function ProductDetail() {
       return;
     }
 
+    if (!selectedColor) {
+      toast.error("يرجى اختيار اللون");
+      return;
+    }
+
     addItem({
-      id: `${product.id}_${selectedSize}`,
-      productId: product.id,
+      id: `${product.id}_${selectedSize}_${selectedColor}`,
+      productId: Number(product.id),
       name: productData.name ?? "",
       image: mainImage || "",
       price: productData.price ?? 0,
       size: selectedSize,
+      color: selectedColor,
       quantity,
     });
 
@@ -110,8 +130,8 @@ export default function ProductDetail() {
           </div>
 
           {/* Thumbnails */}
-          {allImages.length > 1 && (
-            <div className="flex gap-2 overflow-x-auto">
+          {allImages.length > 0 && (
+            <div className="flex gap-2 overflow-x-auto pb-2">
               {allImages.map((img, index) => (
                 <button
                   key={index}
@@ -155,10 +175,45 @@ export default function ProductDetail() {
             </div>
           </div>
 
+          {/* Color Selector */}
+          <div>
+            <Label className="text-base font-semibold mb-3 block">
+              اختر اللون *
+            </Label>
+            <RadioGroup value={selectedColor} onValueChange={setSelectedColor}>
+              <div className="flex flex-wrap gap-2">
+                {(Array.isArray(productData.colors) && productData.colors.length > 0
+                  ? productData.colors
+                  : ["أسود", "أبيض"]
+                ).map((color: string, index) => {
+                  return (
+                    <div key={color || index} className="relative">
+                      <RadioGroupItem
+                        value={color}
+                        id={`color-${color}`}
+                        className="peer sr-only"
+                      />
+                      <Label
+                        htmlFor={`color-${color}`}
+                        className={`
+                        flex items-center justify-center px-6 py-3 rounded-md border-2 cursor-pointer
+                        transition-all font-semibold min-w-[100px]
+                        border-border hover:border-primary peer-data-[state=checked]:border-primary peer-data-[state=checked]:bg-primary peer-data-[state=checked]:text-primary-foreground
+                      `}
+                      >
+                        {color}
+                      </Label>
+                    </div>
+                  );
+                })}
+              </div>
+            </RadioGroup>
+          </div>
+
           {/* Size Selector */}
           <div>
             <Label className="text-base font-semibold mb-3 block">
-              {t("product.selectSize")}
+              {t("product.selectSize")} *
             </Label>
             <RadioGroup value={selectedSize} onValueChange={setSelectedSize}>
               <div className="flex flex-wrap gap-2">

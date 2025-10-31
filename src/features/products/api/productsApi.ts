@@ -25,7 +25,9 @@ export function normalizeProduct(raw: any): Product {
 
 export async function fetchProducts(): Promise<Product[]> {
   const query: Record<string, unknown> = {
-    populate: "*",
+    "populate[0]": "main_image",
+    "populate[1]": "gallery_images",
+    "populate[2]": "category",
   };
 
   const { data } = await axiosInstance.get<StrapiListResponse<Product[]>>("/products", {
@@ -41,17 +43,21 @@ export async function fetchProductBySlug(
   return getBySlug(slug,isBasicGet);
 }
 
-export async function getBySlug(slug: string,isBasicGet?: boolean): Promise<Product | null> {
+export async function getBySlug(
+  slug: string,
+  isBasicGet?: boolean
+): Promise<Product | null> {
   if (!slug) {
+    console.error("fetchProductBySlug: slug is required");
     return null;
   }
- 
-    
-  
+
   try {
     const response = await axiosInstance.get<StrapiListResponse<Product[]>>("/products", {
       params: {
-        populate: "*",
+        "populate[0]": "main_image",
+        "populate[1]": "gallery_images",
+        "populate[2]": "category",
         "filters[slug][$eq]": slug,
         "pagination[pageSize]": 1,
       },

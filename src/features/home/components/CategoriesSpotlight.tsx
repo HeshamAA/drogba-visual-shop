@@ -140,15 +140,26 @@ export default function CategoriesSpotlight() {
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent z-10" />
 
                     <div className="w-full h-full bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center">
-                      <motion.img
-                        src={getImageUrl(
-                          attrs?.category_image?.data?.attributes?.url ?? ""
-                        )}
-                        alt={displayName}
-                        className="absolute inset-0 w-full h-full object-cover"
-                        whileHover={{ scale: 1.05 }}
-                        transition={{ duration: 0.4 }}
-                      />
+                      {attrs?.category_image?.data?.attributes?.url || attrs?.category_image?.url ? (
+                        <motion.img
+                          src={getImageUrl(
+                            attrs?.category_image?.data?.attributes?.url ?? 
+                            attrs?.category_image?.url ?? 
+                            ""
+                          )}
+                          alt={displayName}
+                          className="absolute inset-0 w-full h-full object-cover"
+                          whileHover={{ scale: 1.05 }}
+                          transition={{ duration: 0.4 }}
+                          onError={(e) => {
+                            e.currentTarget.style.display = 'none';
+                          }}
+                        />
+                      ) : (
+                        <div className="absolute inset-0 flex items-center justify-center text-white text-4xl font-bold">
+                          {displayName}
+                        </div>
+                      )}
                     </div>
 
                     <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent z-10" />

@@ -17,7 +17,11 @@ const normalizeCategory = (raw: any): Category => {
     attributes: {
       name: attributes?.name ?? "",
       slug: attributes?.slug ?? "",
+      description: attributes?.description ?? "",
       category_image: attributes?.category_image ?? null,
+      createdAt: attributes?.createdAt,
+      updatedAt: attributes?.updatedAt,
+      publishedAt: attributes?.publishedAt,
     },
   };
 };
@@ -25,7 +29,7 @@ const normalizeCategory = (raw: any): Category => {
 export async function fetchCategories(): Promise<Category[]> {
   const { data } = await axiosInstance.get<StrapiResponse<Category[]>>("/categories", {
     params: {
-      populate: "*",
+      populate: "category_image",
     },
   });
 

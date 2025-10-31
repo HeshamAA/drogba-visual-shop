@@ -264,8 +264,19 @@ export default function ProductForm({
       return;
     }
 
+    if (!currentImageId) {
+      toast.error("يرجى رفع صورة رئيسية للمنتج");
+      return;
+    }
+
     if (selectedSizes.length === 0) {
       toast.error("يرجى اختيار مقاس واحد على الأقل");
+      return;
+    }
+
+    const validColors = colorList.filter((c) => c.trim() !== "");
+    if (validColors.length === 0) {
+      toast.error("يرجى إضافة لون واحد على الأقل");
       return;
     }
 
@@ -301,7 +312,7 @@ export default function ProductForm({
     <form onSubmit={handleSubmit} className="space-y-4">
       {/* Image Upload Section */}
       <div className="space-y-2">
-        <Label>صورة المنتج</Label>
+        <Label>صورة المنتج *</Label>
         <input
           ref={fileInputRef}
           type="file"
