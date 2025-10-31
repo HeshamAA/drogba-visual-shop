@@ -8,7 +8,7 @@ import { useCategories } from "@/features/products/hooks/useCategories";
 import { Plus, X, Upload, Image as ImageIcon, Trash2 } from "lucide-react";
 import { adminProductsApi } from "@/features/admin/api/admin";
 import { getImageUrl } from "@/lib/strapi";
-import { toast } from "@/shared/components/ui/use-toast";
+import toast from "react-hot-toast";
 
 interface ProductFormProps {
   product: Product | null;
@@ -40,6 +40,11 @@ export default function ProductForm({
   const [uploadingImage, setUploadingImage] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [currentImageId, setCurrentImageId] = useState<number | null>(null);
+  
+  // Gallery images state
+  const [galleryImages, setGalleryImages] = useState<Array<{ id: number; url: string }>>([]);
+  const [uploadingGallery, setUploadingGallery] = useState(false);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
 
   const availableSizes = ["XS", "S", "M", "L", "XL", "XXL", "XXXL"];
 
@@ -49,7 +54,7 @@ export default function ProductForm({
         typeof product.sizes === "string"
           ? product.sizes.split(",").map((s) => s.trim())
           : Array.isArray(product.sizes)
-            ? product.sizes
+            ? product.sizes.map((s) => typeof s === "string" ? s : s.name)
             : [];
 
       const colorsArray =
@@ -65,20 +70,29 @@ export default function ProductForm({
       setSelectedSizes(sizesArray);
       setColorList(colorsArray);
 
+      // Set gallery images if product has them
+      if (product.gallery_images && Array.isArray(product.gallery_images)) {
+        const gallery = product.gallery_images.map((img: any) => ({
+          id: img.id,
+          url: getImageUrl(img.url),
+        }));
+        setGalleryImages(gallery);
+      }
+
       // Set image preview if product has an image
-      if (product.product_images) {
+      if (product.main_image) {
         const imageUrl =
-          typeof product.product_images === "object" &&
-          "url" in product.product_images
-            ? getImageUrl(product.product_images.url)
+          typeof product.main_image === "object" &&
+          "url" in product.main_image
+            ? getImageUrl(product.main_image.url)
             : "";
         setImagePreview(imageUrl);
 
         if (
-          typeof product.product_images === "object" &&
-          "id" in product.product_images
+          typeof product.main_image === "object" &&
+          "id" in product.main_image
         ) {
-          setCurrentImageId(product.product_images.id);
+          setCurrentImageId(product.main_image.id);
         }
       }
 
@@ -92,13 +106,14 @@ export default function ProductForm({
         description:
           typeof product.description === "string" ? product.description : "",
         category: product.category,
-        product_images: product.product_images,
+        main_image: product.main_image,
       });
     } else {
       setSelectedSizes([]);
       setColorList([]);
       setImagePreview(null);
       setCurrentImageId(null);
+      setGalleryImages([]);
     }
   }, [product]);
 
@@ -128,21 +143,13 @@ export default function ProductForm({
 
     // Validate file type
     if (!file.type.startsWith("image/")) {
-      toast({
-        title: "خطأ",
-        description: "الرجاء اختيار ملف صورة صالح",
-        variant: "destructive",
-      });
+      toast.error("الرجاء اختيار ملف صورة صالح");
       return;
     }
 
     // Validate file size (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
-      toast({
-        title: "خطأ",
-        description: "حجم الصورة يجب أن يكون أقل من 5MB",
-        variant: "destructive",
-      });
+      toast.error("حجم الصورة يجب أن يكون أقل من 5MB");
       return;
     }
 
@@ -162,20 +169,22 @@ export default function ProductForm({
       // Update formData with the new image
       setFormData((prev) => ({
         ...prev,
-        product_images: uploadedImage as any,
+        main_image: uploadedImage as any,
       }));
 
-      toast({
-        title: "نجح",
-        description: "تم رفع الصورة بنجاح",
-      });
+      toast.success("تم رفع الصورة بنجاح");
     } catch (error: any) {
       console.error("Error uploading image:", error);
-      toast({
-        title: "خطأ",
-        description: "فشل في رفع الصورة: " + (error.message || "حدث خطأ"),
-        variant: "destructive",
-      });
+      
+      // Check if it's an authentication error
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        toast.error("يجب تسجيل الدخول كـ Admin لرفع الصور");
+      } else {
+        toast.error("فشل في رفع الصورة: " + (error.message || "حدث خطأ"));
+      }
+      
+      // Reset preview on error
+      setImagePreview(null);
     } finally {
       setUploadingImage(false);
     }
@@ -186,7 +195,7 @@ export default function ProductForm({
     setCurrentImageId(null);
     setFormData((prev) => ({
       ...prev,
-      product_images: undefined,
+      main_image: undefined,
     }));
   };
 
@@ -194,44 +203,87 @@ export default function ProductForm({
     fileInputRef.current?.click();
   };
 
+  const handleGalleryUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      toast.error("الرجاء اختيار ملف صورة صالح");
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("حجم الصورة يجب أن يكون أقل من 5MB");
+      return;
+    }
+
+    setUploadingGallery(true);
+    try {
+      const uploadedImage = await adminProductsApi.uploadImage(file);
+      const imageUrl = getImageUrl(uploadedImage.url);
+      
+      setGalleryImages((prev) => [...prev, { id: uploadedImage.id, url: imageUrl }]);
+      toast.success("تم إضافة الصورة للمعرض");
+      
+      // Reset file input
+      e.target.value = "";
+    } catch (error: any) {
+      console.error("Error uploading gallery image:", error);
+      
+      if (error.response?.status === 401 || error.response?.status === 403) {
+        toast.error("يجب تسجيل الدخول كـ Admin لرفع الصور");
+      } else {
+        toast.error("فشل في رفع الصورة: " + (error.message || "حدث خطأ"));
+      }
+    } finally {
+      setUploadingGallery(false);
+    }
+  };
+
+  const handleRemoveGalleryImage = (id: number) => {
+    setGalleryImages((prev) => prev.filter((img) => img.id !== id));
+    toast.success("تم حذف الصورة من المعرض");
+  };
+
+  const handleImagePreview = (url: string) => {
+    setPreviewImage(url);
+  };
+
+  const closePreview = () => {
+    setPreviewImage(null);
+  };
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
     // Validation: Check required fields
     if (!formData.name || !formData.price || !formData.quantity) {
-      toast({
-        title: "خطأ",
-        description: "يرجى ملء جميع الحقول المطلوبة (الاسم، السعر، الكمية)",
-        variant: "destructive",
-      });
+      toast.error("يرجى ملء جميع الحقول المطلوبة (الاسم، السعر، الكمية)");
       return;
     }
 
     if (selectedSizes.length === 0) {
-      toast({
-        title: "خطأ",
-        description: "يرجى اختيار مقاس واحد على الأقل",
-        variant: "destructive",
-      });
+      toast.error("يرجى اختيار مقاس واحد على الأقل");
       return;
     }
 
     if (!formData.category) {
-      toast({
-        title: "خطأ",
-        description: "يرجى اختيار فئة للمنتج",
-        variant: "destructive",
-      });
+      toast.error("يرجى اختيار فئة للمنتج");
       return;
     }
 
-    // Prepare product data with selected sizes, colors, and image
+    // Prepare product data with selected sizes, colors, and images
     const productData: Partial<Product> = {
       ...formData,
       sizes: selectedSizes,
       colors: colorList.filter((c) => c.trim() !== ""),
-      product_images: currentImageId
-        ? ({ id: currentImageId } as any)
+      main_image: currentImageId
+        ? currentImageId
+        : undefined,
+      gallery_images: galleryImages.length > 0
+        ? galleryImages.map((img) => img.id)
         : undefined,
     };
 
@@ -315,6 +367,68 @@ export default function ProductForm({
             </div>
           )}
         </div>
+      </div>
+
+      {/* Gallery Images Section */}
+      <div className="space-y-2">
+        <div className="flex items-center justify-between">
+          <Label>معرض الصور</Label>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => document.getElementById("gallery-upload")?.click()}
+            disabled={uploadingGallery}
+            className="gap-1"
+          >
+            <Plus className="h-4 w-4" />
+            إضافة صورة
+          </Button>
+        </div>
+        <input
+          id="gallery-upload"
+          type="file"
+          accept="image/*"
+          onChange={handleGalleryUpload}
+          className="hidden"
+        />
+
+        {galleryImages.length > 0 ? (
+          <div className="grid grid-cols-4 gap-2">
+            {galleryImages.map((img) => (
+              <div key={img.id} className="relative group">
+                <img
+                  src={img.url}
+                  alt="Gallery"
+                  className="w-full h-24 object-cover rounded-md border-2 border-border cursor-pointer hover:border-primary transition-colors"
+                  onClick={() => handleImagePreview(img.url)}
+                />
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="icon"
+                  className="absolute top-1 right-1 h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity"
+                  onClick={() => handleRemoveGalleryImage(img.id)}
+                >
+                  <X className="h-3 w-3" />
+                </Button>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-4 border-2 border-dashed border-input rounded-lg bg-muted/20">
+            <ImageIcon className="h-8 w-8 text-muted-foreground mx-auto mb-2" />
+            <p className="text-sm text-muted-foreground">
+              لا توجد صور في المعرض. انقر على "إضافة صورة" لإضافة صور.
+            </p>
+          </div>
+        )}
+        {uploadingGallery && (
+          <div className="text-center py-2">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary mx-auto"></div>
+            <p className="text-xs text-muted-foreground mt-1">جاري رفع الصورة...</p>
+          </div>
+        )}
       </div>
 
       <div className="space-y-2">
@@ -492,6 +606,32 @@ export default function ProductForm({
           إلغاء
         </Button>
       </div>
+
+      {/* Image Preview Popup */}
+      {previewImage && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm"
+          onClick={closePreview}
+        >
+          <div className="relative max-w-4xl max-h-[90vh] p-4">
+            <Button
+              type="button"
+              variant="secondary"
+              size="icon"
+              className="absolute top-6 right-6 z-10"
+              onClick={closePreview}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+            <img
+              src={previewImage}
+              alt="Preview"
+              className="max-w-full max-h-[85vh] object-contain rounded-lg"
+              onClick={(e) => e.stopPropagation()}
+            />
+          </div>
+        </div>
+      )}
     </form>
   );
 }

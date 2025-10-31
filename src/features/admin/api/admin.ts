@@ -31,8 +31,29 @@ const buildProductPayload = (product: Partial<Product>): { data: Record<string, 
     }
   }
 
-  if (data.product_images === undefined) {
-    delete data.product_images;
+  // Handle main_image - should be just the ID
+  if (data.main_image !== undefined) {
+    if (typeof data.main_image === "number") {
+      // Already an ID, keep it
+    } else if (typeof data.main_image === "object" && data.main_image !== null) {
+      const imageObj = data.main_image as { id?: number };
+      data.main_image = imageObj.id;
+    }
+  }
+
+  // Handle gallery_images - should be array of IDs
+  if (data.gallery_images !== undefined) {
+    if (Array.isArray(data.gallery_images)) {
+      // Already an array, keep it (should be array of IDs)
+    }
+  }
+
+  // Remove undefined fields
+  if (data.main_image === undefined) {
+    delete data.main_image;
+  }
+  if (data.gallery_images === undefined) {
+    delete data.gallery_images;
   }
 
   return { data };
@@ -82,15 +103,26 @@ export const adminProductsApi = {
     await axiosInstance.delete(`/products/${response.documentId}`);
   },
 
-  async uploadImage(file: File): Promise<{ id: number; url: string }> {
+  async uploadImage(file: File): Promise<{ id: number; url: string; formats?: any }> {
     const form = new FormData();
     form.append("files", file);
-    const url = RAW_BASE_URL.replace(/\/$/, "") + "/upload";
-    const { data } = await axiosInstance.post(url, form, {
+    
+    // Use axios instance which already has the base URL configured
+    const { data } = await axiosInstance.post("/upload", form, {
       headers: { "Content-Type": "multipart/form-data" },
     });
+    
     const uploaded = Array.isArray(data) ? data[0] : data;
-    return { id: uploaded?.id, url: uploaded?.url };
+    
+    if (!uploaded || !uploaded.id) {
+      throw new Error("فشل في رفع الصورة");
+    }
+    
+    return { 
+      id: uploaded.id, 
+      url: uploaded.url,
+      formats: uploaded.formats 
+    };
   },
 };
 

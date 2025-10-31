@@ -36,7 +36,9 @@ export interface CategorySummary {
 
 export interface Category {
   id: number;
-  attributes: {
+  name?: string;
+  slug?: string;
+  attributes?: {
     name: string;
     slug: string;
     description?: string;
@@ -69,9 +71,14 @@ export interface Product {
   name: string;
   description?: string;
   price: number;
+  old_price?: number;
+  quantity?: number;
   category?: CategorySummary;
   images?: StrapiImageArray;
-  sizes?: ProductSize[];
+  main_image?: any; // Single image for product
+  gallery_images?: any; // Multiple images for product gallery
+  sizes?: ProductSize[] | string[] | string;
+  colors?: string[] | string;
   featured?: boolean;
   inStock?: boolean;
   createdAt?: string;
