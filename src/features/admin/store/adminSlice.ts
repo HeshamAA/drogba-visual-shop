@@ -1,9 +1,11 @@
 import { createSlice, createAsyncThunk, type PayloadAction } from "@reduxjs/toolkit";
 import type { RootState } from "@/app/store";
 import type { Product, Order, Coupon } from "@/types/strapi";
-import { productsApi, ordersApi, adminProductsApi } from "@/lib/strapi";
-import { mapAxiosError } from "@/lib/api/client";
+import { fetchProducts } from "@/features/products/api/productsApi";
+import { fetchOrders, updateOrder } from "@/features/orders/api/ordersApi";
+import { adminProductsApi } from "@/features/admin/api/admin";
 import { loadJson, saveJson } from "@/shared/utils/storage";
+import { mapErrorToMessage } from "@/lib/api/errorHandler";
 
 const COUPONS_STORAGE_KEY = "admin_coupons";
 
@@ -47,51 +49,51 @@ export const fetchAdminData = createAsyncThunk<
   { rejectValue: string }
 >("admin/fetchData", async (_, { rejectWithValue }) => {
   try {
-    const [products, orders] = await Promise.all([productsApi.getAll(), ordersApi.getAll()]);
+    const [products, orders] = await Promise.all([fetchProducts(), fetchOrders()]);
     return { products, orders };
   } catch (error) {
-    const mapped = mapAxiosError(error);
-    return rejectWithValue(mapped.message);
+    return rejectWithValue(mapErrorToMessage(error));
   }
 });
 
 export const addAdminProduct = createAsyncThunk<
   Product,
-  Product,
+  Partial<Product>,
   { rejectValue: string }
 >("admin/addProduct", async (product, { rejectWithValue }) => {
   try {
-    return await adminProductsApi.create(product);
+    const created = await adminProductsApi.create(product);
+    return created;
   } catch (error) {
-    const mapped = mapAxiosError(error);
-    return rejectWithValue(mapped.message);
+    return rejectWithValue(mapErrorToMessage(error));
   }
 });
 
 export const updateAdminProduct = createAsyncThunk<
   Product,
-  { id: string | number; product: Product },
+  { slug: string; product: Partial<Product> },
   { rejectValue: string }
->("admin/updateProduct", async ({ id, product }, { rejectWithValue }) => {
+>("admin/updateProduct", async ({ slug, product }, { rejectWithValue }) => {
   try {
-    return await adminProductsApi.update(id, product);
+    const updated = await adminProductsApi.update(slug, product);
+    return updated;
   } catch (error) {
-    const mapped = mapAxiosError(error);
-    return rejectWithValue(mapped.message);
+    console.error("Update error:", (error as any)?.response?.data ?? error);
+    return rejectWithValue(mapErrorToMessage(error));
   }
 });
 
 export const deleteAdminProduct = createAsyncThunk<
-  { id: number },
-  number,
+  { slug: string },
+  string,
   { rejectValue: string }
->("admin/deleteProduct", async (id, { rejectWithValue }) => {
+>("admin/deleteProduct", async (slug, { rejectWithValue }) => {
   try {
-    await adminProductsApi.delete(id);
-    return { id };
+    console.log("Deleting product:", slug);
+    await adminProductsApi.delete(slug);
+    return { slug };
   } catch (error) {
-    const mapped = mapAxiosError(error);
-    return rejectWithValue(mapped.message);
+    return rejectWithValue(mapErrorToMessage(error));
   }
 });
 
@@ -101,11 +103,10 @@ export const updateAdminOrderStatus = createAsyncThunk<
   { rejectValue: string }
 >("admin/updateOrderStatus", async ({ id, status }, { rejectWithValue }) => {
   try {
-    await ordersApi.updateStatus(Number(id), status ?? "pending");
+    await updateOrder(id, { status: status ?? "pending" });
     return { id, status };
   } catch (error) {
-    const mapped = mapAxiosError(error);
-    return rejectWithValue(mapped.message);
+    return rejectWithValue(mapErrorToMessage(error));
   }
 });
 
@@ -193,7 +194,7 @@ const adminSlice = createSlice({
       })
       .addCase(deleteAdminProduct.fulfilled, (state, action) => {
         state.loading = false;
-        state.products = state.products.filter((product) => product.id !== action.payload.id);
+        state.products = state.products.filter((product) => product.slug !== action.payload.slug);
       })
       .addCase(deleteAdminProduct.rejected, (state, action) => {
         state.loading = false;

@@ -1,5 +1,5 @@
 import type { Category, CategorySummary } from "@/types/strapi";
-import { apiRequest, type ApiError } from "@/lib/api/client";
+import axiosInstance from "@/lib/api/client";
 
 interface StrapiResponse<T> {
   data: any;
@@ -23,34 +23,28 @@ const normalizeCategory = (raw: any): Category => {
 };
 
 export async function fetchCategories(): Promise<Category[]> {
-  const response = await apiRequest<StrapiResponse<Category[]>>({
-    url: "/categories",
-    method: "GET",
+  const { data } = await axiosInstance.get<StrapiResponse<Category[]>>("/categories", {
     params: {
       populate: "*",
     },
   });
 
-  return Array.isArray(response?.data)
-    ? response.data.map(normalizeCategory)
-    : [];
+  return Array.isArray(data?.data) ? data.data.map(normalizeCategory) : [];
 }
 
 export async function fetchCategoryBySlug(slug: string): Promise<Category | null> {
-  const response = await apiRequest<StrapiResponse<Category[]>>({
-    url: "/categories",
-    method: "GET",
+  const { data } = await axiosInstance.get<StrapiResponse<Category[]>>("/categories", {
     params: {
       "filters[slug][$eq]": slug,
     },
   });
 
-  if (!Array.isArray(response?.data) || response.data.length === 0) {
+  if (!Array.isArray(data?.data) || data.data.length === 0) {
     return null;
   }
 
-  return normalizeCategory(response.data[0]);
+  return normalizeCategory(data.data[0]);
 }
 
-export type CategoriesApiError = ApiError;
+export type CategoriesApiError = unknown;
 export type CategoryLight = CategorySummary;

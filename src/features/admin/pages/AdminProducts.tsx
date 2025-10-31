@@ -36,10 +36,19 @@ function AdminProductsContent() {
     setIsSaving(true);
     try {
       if (editingProduct) {
-        await updateProduct(editingProduct.id, productData as Product);
+        const targetSlug =
+          typeof editingProduct.slug === "string" && editingProduct.slug.trim()
+            ? editingProduct.slug
+            : (editingProduct.attributes as any)?.slug ?? productData.slug;
+
+        if (!targetSlug || !String(targetSlug).trim()) {
+          throw new Error("لا يمكن إيجاد السلاج الخاص بالمنتج المحدد");
+        }
+
+        await updateProduct(String(targetSlug), productData);
         toast.success("تم تحديث المنتج بنجاح");
       } else {
-        await addProduct(productData as Product);
+        await addProduct(productData);
         toast.success("تم إضافة المنتج بنجاح");
       }
       setIsDialogOpen(false);
@@ -58,10 +67,10 @@ function AdminProductsContent() {
     setIsDialogOpen(true);
   };
 
-  const handleDelete = async (id: number) => {
+  const handleDelete = async (slug: string) => {
     if (window.confirm("هل أنت متأكد من حذف هذا المنتج؟")) {
       try {
-        await deleteProduct(id);
+        await deleteProduct(slug);
         toast.success("تم حذف المنتج بنجاح");
         await refetch();
       } catch (error: any) {

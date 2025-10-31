@@ -1,4 +1,7 @@
-import { factories } from "@strapi/strapi";
+/**
+ * category controller
+ */
 
-export default factories.createCoreController("api::category.category");
+import { factories } from '@strapi/strapi'
 
+export default factories.createCoreController('api::category.category');

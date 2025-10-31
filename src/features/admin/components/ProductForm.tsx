@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { Product, ProductImage } from "@/types/strapi";
+import { Product } from "@/types/strapi";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
@@ -8,7 +8,7 @@ import { useCategories } from "@/features/products/hooks/useCategories";
 import { Plus, X, Upload, Image as ImageIcon, Trash2 } from "lucide-react";
 import { adminProductsApi } from "@/features/admin/api/admin";
 import { getImageUrl } from "@/lib/strapi";
-import toast from "react-hot-toast";
+import { toast } from "@/shared/components/ui/use-toast";
 
 interface ProductFormProps {
   product: Product | null;

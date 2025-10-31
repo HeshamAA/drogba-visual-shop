@@ -3,10 +3,10 @@ import type { RootState } from "@/app/store";
 import type { Product } from "@/types/strapi";
 import {
   fetchProducts as fetchProductsApi,
-  fetchProductById as fetchProductByIdApi,
   fetchProductBySlug as fetchProductBySlugApi,
   type ProductsApiError,
 } from "../api/productsApi";
+import { toErrorMessage } from "@/lib/api/errorHandler";
 
 export interface ProductsState {
   list: Product[];
@@ -19,7 +19,7 @@ export interface ProductsState {
   featured: Product[];
   featuredLoading: boolean;
   featuredError: string | null;
-  selectedProductId: string | number | null;
+  selectedProductSlug: string | null;
 }
 
 const initialState: ProductsState = {
@@ -33,29 +33,26 @@ const initialState: ProductsState = {
   featured: [],
   featuredLoading: false,
   featuredError: null,
-  selectedProductId: null,
+  selectedProductSlug: null,
 };
 
-const toErrorMessage = (error: unknown): string => {
-  if (!error) return "Unknown error";
-  if (typeof error === "string") return error;
-  if (typeof error === "object" && error !== null && "message" in error) {
-    return String((error as { message?: unknown }).message ?? "Unknown error");
-  }
-  return "Unknown error";
-};
 
 const storeProduct = (
   state: ProductsState,
   product: Product | null | undefined
 ) => {
   if (!product) return;
-  state.entities[product.id] = product;
-  const slug =
-    (product as any)?.slug ??
-    (product.attributes && (product.attributes as any).slug);
+  const normalizedProduct = {
+    ...product,
+    slug:
+      (product as any)?.slug ??
+      (product.attributes && (product.attributes as any).slug) ?? "",
+  } as Product;
+
+  state.entities[normalizedProduct.id] = normalizedProduct;
+  const slug = normalizedProduct.slug;
   if (typeof slug === "string" && slug.trim()) {
-    state.entitiesBySlug[slug] = product;
+    state.entitiesBySlug[slug] = normalizedProduct;
   }
 };
 
@@ -84,18 +81,6 @@ export const fetchFeaturedProducts = createAsyncThunk<
   }
 });
 
-export const fetchProductById = createAsyncThunk<
-  Product | null,
-  string | number,
-  { rejectValue: ProductsApiError }
->("products/fetchById", async (id, { rejectWithValue }) => {
-  try {
-    return await fetchProductByIdApi(id);
-  } catch (error) {
-    return rejectWithValue(error as ProductsApiError);
-  }
-});
-
 export const fetchProductBySlug = createAsyncThunk<
   Product | null,
   string,
@@ -112,9 +97,6 @@ const productsSlice = createSlice({
   name: "products",
   initialState,
   reducers: {
-    setSelectedProductId(state, action: PayloadAction<string | number | null>) {
-      state.selectedProductId = action.payload;
-    },
     clearProductsError(state) {
       state.listError = null;
       state.detailError = null;
@@ -138,22 +120,6 @@ const productsSlice = createSlice({
         state.listLoading = false;
         state.listError = toErrorMessage(action.payload ?? action.error?.message);
       })
-      .addCase(fetchProductById.pending, (state) => {
-        state.detailLoading = true;
-        state.detailError = null;
-      })
-      .addCase(fetchProductById.fulfilled, (state, action) => {
-        state.detailLoading = false;
-        state.detailError = null;
-        if (action.payload) {
-          storeProduct(state, action.payload);
-          state.selectedProductId = action.payload.id;
-        }
-      })
-      .addCase(fetchProductById.rejected, (state, action) => {
-        state.detailLoading = false;
-        state.detailError = toErrorMessage(action.payload ?? action.error?.message);
-      })
       .addCase(fetchProductBySlug.pending, (state) => {
         state.detailLoading = true;
         state.detailError = null;
@@ -163,9 +129,9 @@ const productsSlice = createSlice({
         state.detailError = null;
         if (action.payload) {
           storeProduct(state, action.payload);
-          state.selectedProductId = action.payload.id;
+          state.selectedProductSlug = action.payload.slug;
         } else {
-          state.selectedProductId = null;
+          state.selectedProductSlug = null;
         }
       })
       .addCase(fetchProductBySlug.rejected, (state, action) => {
@@ -192,7 +158,7 @@ const productsSlice = createSlice({
   },
 });
 
-export const { setSelectedProductId, clearProductsError } = productsSlice.actions;
+export const { clearProductsError } = productsSlice.actions;
 
 export default productsSlice.reducer;
 
@@ -211,13 +177,6 @@ export const selectFeaturedProductsLoading = (state: RootState) =>
   state.products.featuredLoading;
 export const selectFeaturedProductsError = (state: RootState) =>
   state.products.featuredError;
-export const selectProductById = (
-  state: RootState,
-  id?: string | number | null
-): Product | null => {
-  if (!id) return null;
-  return (state.products.entities[id] as Product | undefined) ?? null;
-};
 export const selectProductBySlug = (
   state: RootState,
   slug?: string | null
@@ -226,4 +185,4 @@ export const selectProductBySlug = (
   return (state.products.entitiesBySlug[slug] as Product | undefined) ?? null;
 };
 export const selectSelectedProduct = (state: RootState): Product | null =>
-  selectProductById(state, state.products.selectedProductId);
+  selectProductBySlug(state, state.products.selectedProductSlug);

@@ -51,7 +51,7 @@ export default function ProductCard({ product, className = "" }: ProductCardProp
     "";
 
   const productName = productData.name ?? "";
-  const productSlug = productData.slug ?? product.id;
+  const productSlug = productData.slug ?? product.slug ?? product.id;
   const productPrice = productData.price ?? 0;
   const previousPrice = productData.old_price;
 

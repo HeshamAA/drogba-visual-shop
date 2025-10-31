@@ -23,9 +23,9 @@ export interface UseAdminResult {
   coupons: Coupon[];
   loading: boolean;
   error: string | null;
-  addProduct: (product: Product) => Promise<Product>;
-  updateProduct: (id: string | number, product: Product) => Promise<Product>;
-  deleteProduct: (id: number) => Promise<void>;
+  addProduct: (product: Partial<Product>) => Promise<Product>;
+  updateProduct: (slug: string, product: Partial<Product>) => Promise<Product>;
+  deleteProduct: (slug: string) => Promise<void>;
   updateOrderStatus: (id: string | number, status: Order["status"]) => Promise<void>;
   addCoupon: (coupon: Coupon) => void;
   updateCoupon: (code: string, coupon: Coupon) => void;
@@ -49,7 +49,7 @@ export const useAdmin = (): UseAdminResult => {
   }, [dispatch, initialized, loading]);
 
   const addProduct = useCallback(
-    async (product: Product) => {
+    async (product: Partial<Product>) => {
       const result = await dispatch(addAdminProduct(product)).unwrap();
       return result;
     },
@@ -57,16 +57,16 @@ export const useAdmin = (): UseAdminResult => {
   );
 
   const updateProduct = useCallback(
-    async (id: string | number, product: Product) => {
-      const result = await dispatch(updateAdminProduct({ id, product })).unwrap();
+    async (slug: string, product: Partial<Product>) => {
+      const result = await dispatch(updateAdminProduct({ slug, product })).unwrap();
       return result;
     },
     [dispatch],
   );
 
   const deleteProduct = useCallback(
-    async (id: number) => {
-      await dispatch(deleteAdminProduct(id)).unwrap();
+    async (slug: string) => {
+      await dispatch(deleteAdminProduct(slug)).unwrap();
     },
     [dispatch],
   );

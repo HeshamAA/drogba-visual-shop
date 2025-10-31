@@ -1,89 +1,172 @@
 # Drogba Visual Shop
 
-Modern e-commerce platform for fashion and lifestyle products.
+منصّة تجارة إلكترونية لعرض منتجات الأزياء والإكسسوارات مع لوحة تحكم للأدمن لإدارة المحتوى والطلبات.
 
-## Project info
+## المحتوى
 
-**URL**: https://lovable.dev/projects/baa1b7f0-a5ef-4e47-b948-f7c7505e895b
+1. [نظرة عامة](#نظرة-عامة)
+2. [التقنيات المستخدمة](#التقنيات-المستخدمة)
+3. [هيكلة المشروع](#هيكلة-المشروع)
+4. [تدفق العمل العام](#تدفق-العمل-العام)
+5. [الحالة العالمية وإدارة البيانات](#الحالة-العالمية-وإدارة-البيانات)
+6. [التكامل مع واجهات Strapi](#التكامل-مع-واجهات-strapi)
+7. [أهم الدوال والوظائف](#أهم-الدوال-والوظائف)
+8. [التصميم وطبقة العرض](#التصميم-وطبقة-العرض)
+9. [تشغيل المشروع محليًا](#تشغيل-المشروع-محليًا)
+10. [متغيرات البيئة](#متغيرات-البيئة)
 
-## How can I edit this code?
+## نظرة عامة
 
-There are several ways of editing your application.
+يعمل المشروع باعتباره واجهة أمامية (Frontend) مبنية بـ **React + Vite + TypeScript** ومتصلة بواجهة برمجية خلفية مبنية على **Strapi**. يوفر الموقع ثلاث شرائح أساسية:
 
-**Use Lovable**
+- **الزوار**: تصفح المنتجات، إضافة عناصر إلى السلة، وإتمام الطلب.
+- **العملاء**: متابعة الطلبات وعرض التفاصيل بعد الشراء.
+- **الإدمن (Super Admin)**: إدارة المنتجات، الطلبات، والكوبونات من خلال لوحة إدارة خاصة.
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/baa1b7f0-a5ef-4e47-b948-f7c7505e895b) and start prompting.
+## التقنيات المستخدمة
 
-Changes made via Lovable will be committed automatically to this repo.
+- **Vite** لتجميع وتشغيل المشروع بسرعة.
+- **React 18** لبناء الواجهة التفاعلية.
+- **TypeScript** لضمان أمان الأنواع.
+- **Redux Toolkit** لإدارة الحالة العالمية.
+- **React Router DOM** لإدارة التوجيه بين الصفحات العامة ولوحة التحكم.
+- **Axios** للتعامل مع واجهات Strapi.
+- **Tailwind CSS** و **shadcn/ui** لتصميم عناصر واجهة متناسقة وسريعة.
+- **react-hook-form** و **zod** للتحقق من النماذج في لوحة الإدارة.
 
-**Use your preferred IDE**
+## هيكلة المشروع
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+أهم المجلدات داخل `src/`:
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+```text
+src/
+├─ app/
+│  ├─ routes/         # تعريف المسارات العامة والإدارية
+│  ├─ store.ts        # تهيئة Redux store
+│  └─ hooks.ts        # هوكس مختصرة للوصول للـ store
+├─ features/
+│  ├─ admin/          # صفحات، API، سياق، وSlices خاصة بلوحة التحكم
+│  ├─ auth/           # مصادقة الإدمن واستخدام Strapi
+│  ├─ cart/           # إدارة سلة التسوق وسياقها
+│  ├─ categories/     # منطق تصنيف المنتجات
+│  ├─ home/           # الصفحة الرئيسية والعناصر المرتبطة بها
+│  ├─ orders/         # إنشاء الطلبات وتتبع حالات الطلب
+│  └─ products/       # عرض المنتجات، تفاصيل المنتج، واستهلاك البيانات
+├─ lib/
+│  └─ api/            # تهيئة axios ومعالجات الأخطاء المشتركة
+├─ shared/
+│  ├─ components/     # مكونات UI معاد استخدامها (Header, Footer, forms ...)
+│  ├─ hooks/          # هوكس مشتركة
+│  └─ utils/          # أدوات عامة (مثل التخزين المحلي)
+└─ main.tsx           # نقطة الدخول وتهيئة React + Redux
+```
 
-Follow these steps:
+## تدفق العمل العام
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+### 1. التهيئة والتشغيل
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+- يبدأ التطبيق من `main.tsx` حيث يتم لف التطبيق بالكامل بمزود Redux `Provider`، ثم يتم تحميل `App.tsx` لإدارة الطبقات العليا للتطبيق.
+- يتم تحميل الإعدادات العامة مثل الثيم، الـ Tooltip، وضبط مكتبة i18n من خلال مزودات (Providers) في `App.tsx`.
 
-# Step 3: Install the necessary dependencies.
-npm i
+### 2. التوجيه (Routing)
 
-# Step 4: Set up environment variables
-# Create a .env file and add:
-# VITE_STRAPI_URL=http://localhost:1337
+- `PublicRoutes.tsx` تعرف الصفحات المتاحة للزوار (الصفحة الرئيسية، المنتجات، السلة، الدفع، ...).
+- `AdminRoutes.tsx` توفر مسارات الإدمن وتستخدم مكونين مركزيين:
+  - `ProtectedRoute` لمنع الوصول غير المصرّح به والتحقق من دور المستخدم.
+  - `GuestRoute` لمنع إدمن مسجّل دخولًا من زيارة صفحة تسجيل الدخول مجددًا.
 
-# Step 5: Start the development server with auto-reloading and an instant preview.
+### 3. دورة حياة المستخدم
+
+- عند تحميل التطبيق، يتم التأكد من هوية المستخدم عبر `useAuth.checkAuth()`.
+- الزوار بإمكانهم تصفح المنتجات، إضافة عناصر إلى السلة (`CartContext`) ثم متابعة الطلب (`Checkout` > `Orders`).
+- الإدمن يستطيع تسجيل الدخول، استرجاع البيانات (منتجات + طلبات) وإدارتها عبر لوحة القيادة.
+
+## الحالة العالمية وإدارة البيانات
+
+- تم تهيئة Redux store في `src/app/store.ts` مع دمج عدة شرائح (Slices) مثل `products`, `categories`, `orders`, `cart`, و `admin`.
+- يتم تعطيل فحص القيم القابلة للتسلسل (serializable check) لتسهيل تخزين كائنات غنية قادمة من Strapi.
+- يتم التحكم في سلوك الشرائح من خلال **Async Thunks** للتعامل مع الطلبات الخارجية، ويتم تخزين الأخطاء وحالات التحميل لعرضها في الواجهة.
+
+## التكامل مع واجهات Strapi
+
+- يوجد عميل axios مركزي في `src/lib/api/client.ts` يقوم بالتالي:
+  - ضبط عنوان الأساس (`/api`).
+  - إضافة رمز المصادقة (JWT) تلقائيًا إذا وُجد في LocalStorage.
+  - التعامل مع حالات الاستجابة غير المصرح بها (401) بإزالة بيانات الجلسة وإعادة التوجيه.
+- كل وحدة (Products, Orders, Admin ...) تستورد هذا العميل وتبني فوقه دوالًا متخصصة حسب الحاجة.
+
+## أهم الدوال والوظائف
+
+### 1. مصادقة الأدمن – `useAuth`
+
+الموجود في `src/features/auth/hooks/useAuth.ts` وهو hook مسؤول عن:
+
+- قراءة الجلسة المخزنة (`loadString`, `loadJson`).
+- `login`: التحقق من الحقول، استدعاء `authApi.login` لجلب JWT ثم `authApi.getMe` لجلب بيانات المستخدم من Strapi.
+- `checkAuth`: إعادة التحقق من صحة الـ token عند كل تحميل للتطبيق.
+- `logout`: مسح البيانات من الذاكرة المحلية وإعادة الحالة الأولية.
+- يُعيد حالات مثل `isAuthenticated`, `isSuperAdmin`, `isLoading` لتسهيل استخدامها في الواجهة.
+
+### 2. استهلاك بيانات المنتجات – `productsApi`
+
+داخل `src/features/products/api/productsApi.ts`:
+
+- `fetchProducts`: يجلب قائمة المنتجات مع `populate=*` لضمان إحضار العلاقات.
+- `getBySlug`: يجلب منتجًا واحدًا باستخدام الفلترة `filters[slug][$eq]`.
+- `normalizeProduct`: توحيد هيكل الاستجابة القادمة من Strapi لتطابق واجهة `Product` الداخلية.
+
+### 3. لوحة تحكم الأدمن – `adminSlice`
+
+في `src/features/admin/store/adminSlice.ts` تتوفر مجموعة Thunks ودوال مساعدة:
+
+- `fetchAdminData`: يجلب المنتجات والطلبات بالتوازي عند فتح لوحة التحكم.
+- `addAdminProduct`, `updateAdminProduct`, `deleteAdminProduct`: عمليات CRUD على المنتجات.
+- `updateAdminOrderStatus`: تحديث حالة الطلب بإرسال طلب إلى Strapi.
+- دوال reducers لإدارة الكوبونات (`addCoupon`, `updateCoupon`, `deleteCoupon`) مع حفظها محليًا.
+
+### 4. الطلبات – `orders` feature
+
+- تحتوي على صفحات مثل `Checkout` و `ThankYou` لإدارة تجربة الدفع.
+- تستخدم دوال API من `src/features/orders/api/ordersApi.ts` للتواصل مع Strapi وتحديث الحالة في `ordersSlice`.
+
+### 5. إدارة السلة – `CartContext`
+
+- `src/features/cart/CartContext.tsx` يوفر سياقًا لتخزين عناصر السلة محليًا.
+- يدعم إضافة العناصر، تعديل الكمية، احتساب الإجمالي، وتخزين السلة في LocalStorage ليبقى محتواها بين الجلسات.
+
+## التصميم وطبقة العرض
+
+- يستخدم المشروع نظام تصميم مبني على مكتبة shadcn/ui مع Tailwind لكتابة الستايلات بسرعة.
+- يتم تعريف المكونات المشتركة (Buttons, Inputs, Modals, Tables) داخل `shared/components/ui/` لضمان التناسق.
+- يوجد دعم للغات متعددة عبر i18n (ملفات الترجمة في `shared/i18n`).
+
+## تشغيل المشروع محليًا
+
+```bash
+npm install
+
+# تأكد من إعداد ملف .env (انظر القسم التالي)
 npm run dev
 ```
 
-## Environment Variables
+- يتم تشغيل التطبيق افتراضيًا على `http://localhost:5173`.
+- يمكن تشغيل وضع البناء للإنتاج عبر `npm run build`، ثم `npm run preview` لتجربة النسخة المبنية.
 
-Create a `.env` file in the root directory with the following:
+## متغيرات البيئة
+
+يجب إنشاء ملف `.env` في الجذر يحتوي على:
 
 ```env
 VITE_STRAPI_URL=http://localhost:1337
 ```
 
-Replace with your Strapi backend URL.
+- غيّر العنوان حسب عنوان خادم Strapi لديك.
+- يتم استخدام القيمة داخل `axiosInstance` لتهيئة عنوان الواجهة البرمجية (`/api`).
 
-**Edit a file directly in GitHub**
+---
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
-
-**Use GitHub Codespaces**
-
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
-
-## What technologies are used for this project?
-
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/baa1b7f0-a5ef-4e47-b948-f7c7505e895b) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+> **ملاحظات إضافية**
+>
+> - اقرأ `CHANGELOG.md` لمعرفة آخر التحديثات المنفذة.
+> - يوجد مجلد `drogba-backend/` يحتوي على إعدادات Strapi إذا احتجت إلى تشغيل الواجهة الخلفية محليًا.
+> - للمساهمة أو التوسع، راجع slices المختلفة وملفات API لمعرفة أنماط العمل المتبعة.

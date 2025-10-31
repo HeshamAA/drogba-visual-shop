@@ -6,6 +6,7 @@ import {
   type CreateOrderPayload,
   type OrdersApiError,
 } from "../api/ordersApi";
+import { toErrorMessage } from "@/lib/api/errorHandler";
 
 interface OrdersState {
   currentOrder: Order | null;
@@ -21,14 +22,6 @@ const initialState: OrdersState = {
   success: false,
 };
 
-const toErrorMessage = (error: unknown): string => {
-  if (!error) return "Unknown error";
-  if (typeof error === "string") return error;
-  if (typeof error === "object" && error !== null && "message" in error) {
-    return String((error as { message?: unknown }).message ?? "Unknown error");
-  }
-  return "Unknown error";
-};
 
 export const submitOrder = createAsyncThunk<
   Order | null,
@@ -36,6 +29,7 @@ export const submitOrder = createAsyncThunk<
   { rejectValue: OrdersApiError }
 >("orders/submit", async (payload, { rejectWithValue }) => {
   try {
+    console.log(payload);
     return await createOrderApi(payload);
   } catch (error) {
     return rejectWithValue(error as OrdersApiError);

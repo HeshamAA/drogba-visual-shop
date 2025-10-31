@@ -6,6 +6,7 @@ import {
   fetchCategoryBySlug as fetchCategoryBySlugApi,
   type CategoriesApiError,
 } from "../api/categoriesApi";
+import { toErrorMessage } from "@/lib/api/errorHandler";
 
 interface CategoriesState {
   list: Category[];
@@ -27,14 +28,6 @@ const initialState: CategoriesState = {
   detailError: null,
 };
 
-const toErrorMessage = (error: unknown): string => {
-  if (!error) return "Unknown error";
-  if (typeof error === "string") return error;
-  if (typeof error === "object" && error !== null && "message" in error) {
-    return String((error as { message?: unknown }).message ?? "Unknown error");
-  }
-  return "Unknown error";
-};
 
 const storeCategory = (
   state: CategoriesState,

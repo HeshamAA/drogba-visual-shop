@@ -19,7 +19,7 @@ export default function Checkout() {
   const { items, totalPrice, clearCart } = useCart();
   const { submitOrder, loading, error } = useOrderSubmission();
 
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cash_on_delivery");
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cash");
   const [isVodafonePaid, setIsVodafonePaid] = useState(false);
   const [showVodafoneConfirmation, setShowVodafoneConfirmation] = useState(false);
   const [formData, setFormData] = useState({
@@ -55,10 +55,10 @@ export default function Checkout() {
     }
 
     // Prepare order data
-    const shippingCost = paymentMethod === "cash_on_delivery" ? SHIPPING_FEE : 0;
+    const shippingCost = paymentMethod === "cash" ? SHIPPING_FEE : 0;
     const orderData = {
       customer_name: formData.name,
-      phone: formData.phone,
+      customer_phone: formData.phone,
       address: formData.address,
       products: items.map((item) => ({
         productId: item.productId,
@@ -77,7 +77,7 @@ export default function Checkout() {
     if (success) {
       toast.success("تم تأكيد طلبك بنجاح!");
       clearCart();
-      if (paymentMethod === "vodafone_cash") {
+      if (paymentMethod === "vodafone cash") {
         navigate("/order-tracking");
       } else {
         navigate("/thank-you");
@@ -154,7 +154,7 @@ export default function Checkout() {
               onValueChange={(value) => {
                 const nextMethod = value as PaymentMethod;
                 setPaymentMethod(nextMethod);
-                if (nextMethod !== "vodafone_cash") {
+                if (nextMethod !== "vodafone cash") {
                   setIsVodafonePaid(false);
                   setShowVodafoneConfirmation(false);
                 }
@@ -162,14 +162,14 @@ export default function Checkout() {
             >
               <div className="flex flex-col gap-4">
                 <div className="flex items-center space-x-2 space-x-reverse">
-                  <RadioGroupItem value="cash_on_delivery" id="cod" />
+                  <RadioGroupItem value="cash" id="cod" />
                   <Label htmlFor="cod" className="cursor-pointer">
                     {t("checkout.cod")}
                   </Label>
                 </div>
 
                 <div className="flex items-center space-x-2 space-x-reverse">
-                  <RadioGroupItem value="vodafone_cash" id="vodafone" />
+                  <RadioGroupItem value="vodafone cash" id="vodafone" />
                   <Label htmlFor="vodafone" className="cursor-pointer">
                     دفع بواسطة فودافون كاش
                   </Label>
@@ -177,7 +177,7 @@ export default function Checkout() {
               </div>
             </RadioGroup>
 
-            {paymentMethod === "cash_on_delivery" ? (
+            {paymentMethod === "cash" ? (
               <p className="text-sm text-muted-foreground">
                 سيتم إضافة رسوم توصيل قدرها {SHIPPING_FEE} جنيه إلى إجمالي السعر.
               </p>
@@ -235,7 +235,7 @@ export default function Checkout() {
             className="w-full"
             disabled={
               loading ||
-              (paymentMethod === "vodafone_cash" && !isVodafonePaid)
+              (paymentMethod === "vodafone cash" && !isVodafonePaid)
             }
           >
             {loading ? (
@@ -279,14 +279,14 @@ export default function Checkout() {
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">الشحن</span>
                 <span className="font-semibold">
-                  {paymentMethod === "cash_on_delivery" ? SHIPPING_FEE : 0} {t("product.price")}
+                  {paymentMethod === "cash" ? SHIPPING_FEE : 0} {t("product.price")}
                 </span>
               </div>
               <div className="border-t pt-2">
                 <div className="flex justify-between text-lg font-bold">
                   <span>{t("cart.total")}</span>
                   <span>
-                    {totalPrice + (paymentMethod === "cash_on_delivery" ? SHIPPING_FEE : 0)} {t("product.price")}
+                    {totalPrice + (paymentMethod === "cash" ? SHIPPING_FEE : 0)} {t("product.price")}
                   </span>
                 </div>
               </div>

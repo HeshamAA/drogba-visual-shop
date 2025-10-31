@@ -7,25 +7,47 @@
     "displayName": "Order"
   },
   "options": {
-    "draftAndPublish": false
+    "draftAndPublish": true
   },
+  "pluginOptions": {},
   "attributes": {
-    "customer_name": { "type": "string", "required": true },
-    "customer_phone": { "type": "string", "required": true },
-    "address": { "type": "text", "required": true },
-    "status": {
-      "type": "enumeration",
-      "enum": ["pending", "delivered", "canceled"],
-      "default": "pending"
-    },
-    "payment_method": { "type": "string", "default": "Cash on Delivery" },
-    "total_price": { "type": "decimal", "required": true },
-    "products": {
+    "order_products": {
       "type": "relation",
-      "relation": "manyToMany",
-      "target": "api::product.product",
-      "inversedBy": "orders"
+      "relation": "oneToMany",
+      "target": "api::order-product.order-product"
+    },
+    "customer_name": {
+      "type": "string",
+      "required": true
+    },
+    "customer_phone": {
+      "type": "biginteger",
+      "required": true
+    },
+    "address": {
+      "type": "text",
+      "required": true
+    },
+    "total_price": {
+      "type": "decimal"
+    },
+    "order_status": {
+      "type": "enumeration",
+      "enum": [
+        "pending",
+        "completed",
+        "cancelled"
+      ]
+    },
+    "payment_method": {
+      "type": "enumeration",
+      "required": true,
+      "default": "vodafone cash",
+      "enum": [
+        "cash",
+        "vodafone cash",
+        "instapay"
+      ]
     }
   }
 }
-

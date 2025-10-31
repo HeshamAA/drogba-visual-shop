@@ -9,6 +9,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/features/auth/hooks/useAuth";
+import { loadString } from "@/shared/utils/storage";
 
 type LocationState = {
   from?: {
@@ -43,6 +44,12 @@ export const useAdminLogin = (): UseAdminLoginResult => {
 
   useEffect(() => {
     if (isAuthenticated) {
+      redirectToDestination();
+      return;
+    }
+
+    const storedToken = loadString("admin_token");
+    if (storedToken) {
       redirectToDestination();
     }
   }, [isAuthenticated, redirectToDestination]);

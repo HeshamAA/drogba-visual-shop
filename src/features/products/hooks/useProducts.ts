@@ -2,11 +2,9 @@ import { useEffect, useMemo, useCallback } from "react";
 import { useAppDispatch, useAppSelector } from "@/app/hooks";
 import type { Product } from "@/types/strapi";
 import {
-  fetchProductById,
   fetchProducts,
   fetchFeaturedProducts,
   fetchProductBySlug,
-  selectProductById,
   selectProductsError,
   selectProductsList,
   selectProductsLoading,
@@ -75,24 +73,7 @@ export function useProducts({
   };
 }
 
-export function useProduct(id: string | number) {
-  const dispatch = useAppDispatch();
-  const product = useAppSelector((state) => selectProductById(state, id));
-  const isLoading = useAppSelector(selectProductDetailLoading);
-  const error = useAppSelector(selectProductDetailError);
-
-  useEffect(() => {
-    if (id) {
-      dispatch(fetchProductById(id));
-    }
-  }, [dispatch, id]);
-
-  return {
-    product: product ?? null,
-    isLoading,
-    error,
-  };
-}
+export const useProduct = useProductBySlug;
 
 export function useFeaturedProducts(limit = 4) {
   const dispatch = useAppDispatch();

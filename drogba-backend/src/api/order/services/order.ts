@@ -1,4 +1,7 @@
-import { factories } from "@strapi/strapi";
+/**
+ * order service
+ */
 
-export default factories.createCoreService("api::order.order");
+import { factories } from '@strapi/strapi';
 
+export default factories.createCoreService('api::order.order');

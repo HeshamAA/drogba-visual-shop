@@ -1,4 +1,7 @@
-import { factories } from "@strapi/strapi";
+/**
+ * product service
+ */
 
-export default factories.createCoreService("api::product.product");
+import { factories } from '@strapi/strapi';
 
+export default factories.createCoreService('api::product.product');

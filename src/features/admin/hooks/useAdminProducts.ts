@@ -1,9 +1,8 @@
-import { useCallback, useState, useEffect } from "react";
+import { useCallback, useState } from "react";
 import toast from "react-hot-toast";
 
 import { useAdmin } from "@/features/admin/hooks/useAdmin";
 import { Product } from "@/types/strapi";
-import { loadString } from "@/shared/utils/storage";
 import { useAdminNavigation } from "@/features/admin/hooks/useAdminNavigation";
 
 export const useAdminProducts = () => {
@@ -12,18 +11,20 @@ export const useAdminProducts = () => {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const { goBackToDashboard } = useAdminNavigation();
 
-  useEffect(() => {
-    const isAuthenticated = loadString("admin_authenticated");
-    if (!isAuthenticated) {
-      goBackToDashboard();
-    }
-  }, [goBackToDashboard]);
-
   const handleSave = useCallback(
-    async (product: Product) => {
+    async (product: Partial<Product>) => {
       try {
         if (editingProduct) {
-          await updateProduct(editingProduct.id, product);
+          const targetSlug =
+            typeof editingProduct.slug === "string" && editingProduct.slug.trim()
+              ? editingProduct.slug
+              : (editingProduct.attributes as any)?.slug ?? product.slug;
+
+          if (!targetSlug || !String(targetSlug).trim()) {
+            throw new Error("لا يمكن إيجاد السلاج الخاص بالمنتج المحدد");
+          }
+
+          await updateProduct(String(targetSlug), product);
           toast.success("تم تحديث المنتج بنجاح");
         } else {
           await addProduct(product);
@@ -32,6 +33,7 @@ export const useAdminProducts = () => {
         setIsDialogOpen(false);
         setEditingProduct(null);
       } catch (error: any) {
+        
         toast.error(error?.message || "فشل حفظ المنتج");
       }
     },
@@ -44,14 +46,15 @@ export const useAdminProducts = () => {
   }, []);
 
   const handleDelete = useCallback(
-    async (id: number) => {
+    async (slug: string) => {
       if (!window.confirm("هل أنت متأكد من حذف هذا المنتج؟")) {
         return;
       }
       try {
-        await deleteProduct(id);
+        await deleteProduct(slug);
         toast.success("تم حذف المنتج بنجاح");
       } catch (error: any) {
+        console.log(error);
         toast.error(error?.message || "فشل حذف المنتج");
       }
     },

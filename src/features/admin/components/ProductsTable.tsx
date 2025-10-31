@@ -15,7 +15,7 @@ import { getImageUrl } from "@/lib/strapi";
 interface ProductsTableProps {
   products: Product[];
   onEdit: (product: Product) => void;
-  onDelete: (id: number) => void;
+  onDelete: (slug: string) => void;
 }
 
 export default function ProductsTable({
@@ -52,6 +52,15 @@ export default function ProductsTable({
               const imageUrl = product.product_images?.url
                 ? getImageUrl(product.product_images.url)
                 : "";
+              const colorsField = (product as any).colors;
+              const colors = Array.isArray(colorsField)
+                ? colorsField
+                : typeof colorsField === "string"
+                  ? colorsField
+                      .split(",")
+                      .map((color) => color.trim())
+                      .filter(Boolean)
+                  : [];
 
               return (
                 <TableRow key={product.id}>
@@ -104,9 +113,8 @@ export default function ProductsTable({
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-1 flex-wrap max-w-[150px]">
-                      {Array.isArray(product.colors) &&
-                      product.colors.length > 0 ? (
-                        product.colors.map((color, idx) => (
+                      {Array.isArray(colors) && colors.length > 0 ? (
+                        colors.map((color, idx) => (
                           <span
                             key={idx}
                             className="inline-block text-xs px-2 py-1 rounded bg-secondary text-secondary-foreground font-medium"
@@ -114,10 +122,9 @@ export default function ProductsTable({
                             {color}
                           </span>
                         ))
-                      ) : typeof product.colors === "string" &&
-                        product.colors ? (
+                      ) : typeof colorsField === "string" && colors.length > 0 ? (
                         <span className="inline-block text-xs px-2 py-1 rounded bg-secondary text-secondary-foreground font-medium">
-                          {product.colors}
+                          {colorsField}
                         </span>
                       ) : (
                         <span className="text-xs text-muted-foreground">
@@ -138,7 +145,7 @@ export default function ProductsTable({
                       <Button
                         variant="ghost"
                         size="icon"
-                        onClick={() => onDelete(product.id)}
+                        onClick={() => onDelete(product.slug)}
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>

@@ -1,19 +1,21 @@
 import { useEffect } from "react";
-import { Navigate, useLocation } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import { useAuth } from "@/features/auth/hooks/useAuth";
+import { loadString } from "@/shared/utils/storage";
 
-interface ProtectedRouteProps {
+interface GuestRouteProps {
   children: React.ReactNode;
 }
 
-export default function ProtectedRoute({ children }: ProtectedRouteProps) {
+export default function GuestRoute({ children }: GuestRouteProps) {
   const { isAuthenticated, isLoading, checkAuth ,user } = useAuth();
-  const location = useLocation();
-
   const role = user?.role?.name;
-  console.log(role);
+  
   useEffect(() => {
-    void checkAuth();
+    const storedToken = loadString("admin_token");
+    if (storedToken) {
+      void checkAuth();
+    }
   }, [checkAuth]);
 
   if (isLoading) {
@@ -27,8 +29,8 @@ export default function ProtectedRoute({ children }: ProtectedRouteProps) {
     );
   }
 
-  if (!isAuthenticated || role !== "superadmin") {
-    return <Navigate to="/admin/login" state={{ from: location }} replace />;
+  if (isAuthenticated && role === "superadmin") {
+    return <Navigate to="/admin/dashboard" replace />;
   }
 
   return <>{children}</>;

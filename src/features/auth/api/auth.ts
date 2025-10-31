@@ -1,4 +1,4 @@
-import axios from "axios";
+import axiosInstance from "@/lib/api/client";
 
 export type Role = {
   name: string;
@@ -15,10 +15,8 @@ export type User = {
   updatedAt: string;
 };
 
-const RAW_BASE_URL =
-  (import.meta as any).env?.VITE_STRAPI_URL || "http://localhost:1337";
-
 export const authApi = {
+  // 🔹 Login endpoint (Strapi Users & Permissions)
   async login({
     identifier,
     password,
@@ -26,22 +24,21 @@ export const authApi = {
     identifier: string;
     password: string;
   }) {
-    // Strapi Admin login endpoint
-    const url = RAW_BASE_URL.replace(/\/$/, "") + "/admin/login";
-    const { data } = await axios.post(url, { email: identifier, password });
-    // Normalize to { jwt, user }
+    const { data } = await axiosInstance.post("/auth/local", { identifier, password });
+
+    // Strapi returns { jwt, user }
     return {
-      jwt: data?.data?.token ?? data?.token ?? "",
-      user: (data?.data?.user ?? data?.user) as User,
+      jwt: data.jwt,
+      user: data.user as User,
     };
   },
 
+  // 🔹 Get currently authenticated user
   async getMe(token: string): Promise<User> {
-    const url = RAW_BASE_URL.replace(/\/$/, "") + "/admin/users/me";
-    const { data } = await axios.get(url, {
+    const { data } = await axiosInstance.get("/users/me", {
       headers: { Authorization: `Bearer ${token}` },
+      params: { populate: "*" },
     });
-    // Strapi may return { data: {...} } or the object directly
-    return (data?.data ?? data) as User;
+    return data as User;
   },
 };

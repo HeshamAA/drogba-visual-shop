@@ -69,6 +69,8 @@ export interface ProductAttributes {
 
 export interface Product extends ProductAttributes {
   id: number | string;
+  documentId:string;
+  slug: string;
   attributes?: ProductAttributes & {
     categories?: {
       data?: Category[];
@@ -127,10 +129,10 @@ export interface OrderProductSummary {
 }
 
 export type PaymentMethod =
-  | "cash_on_delivery"
-  | "vodafone_cash"
+  | "cash"
+  | "vodafone cash"
   | "cod"
-  | "wallet";
+  | "instapay";
 
 export interface Order {
   id?: number | string;

@@ -1,4 +1,7 @@
-import { factories } from "@strapi/strapi";
+/**
+ * order controller
+ */
 
-export default factories.createCoreController("api::order.order");
+import { factories } from '@strapi/strapi'
 
+export default factories.createCoreController('api::order.order');

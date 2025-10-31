@@ -1,80 +1,37 @@
-import axios, { 
-  AxiosError,
-  AxiosHeaders,
-  AxiosInstance,
-  AxiosRequestConfig,
-  AxiosResponse,
-} from "axios";
-import { loadString } from "@/shared/utils/storage";
+import axios from "axios";
 
 const RAW_BASE_URL =
   (import.meta as any).env?.VITE_STRAPI_URL || "http://localhost:1337";
+const API_URL = RAW_BASE_URL.replace(/\/$/, "") + "/api";
 
-const API_BASE_URL = RAW_BASE_URL.replace(/\/$/, "") + "/api";
+const axiosInstance = axios.create({
+  baseURL: API_URL,
+});
 
-export const apiClient: AxiosInstance = axios.create({
-  baseURL: API_BASE_URL,
-  headers: {
-    "Content-Type": "application/json",
+// ✅ Interceptor لإضافة الـ Token في كل طلب
+axiosInstance.interceptors.request.use(
+  (config) => {
+    const token =
+      localStorage.getItem("admin_token") ?? localStorage.getItem("token");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
   },
-});
+  (error) => Promise.reject(error)
+);
 
-apiClient.interceptors.request.use((config) => {
-  const token = loadString("admin_token");
-  if (token) {
-    const headers = config.headers
-      ? AxiosHeaders.from(config.headers)
-      : new AxiosHeaders();
-    headers.set("Authorization", `Bearer ${token}`);
-    config.headers = headers;
+axiosInstance.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      console.warn("غير مصرح بالدخول، سيتم تسجيل الخروج تلقائيًا");
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      window.location.href = "/login";
+    }
+    return Promise.reject(error);
   }
-  return config;
-});
+);
 
-export interface ApiError {
-  status: number;
-  message: string;
-  details?: unknown;
-}
-
-export function mapAxiosError(error: unknown): ApiError {
-  if (axios.isAxiosError(error)) {
-    const axiosError = error as AxiosError<any>;
-    const status = axiosError.response?.status ?? 500;
-    const message =
-      axiosError.response?.data?.error?.message ??
-      axiosError.response?.data?.message ??
-      axiosError.message ??
-      "Request failed";
-    return {
-      status,
-      message,
-      details: axiosError.response?.data ?? axiosError.toJSON(),
-    };
-  }
-
-  if (error instanceof Error) {
-    return {
-      status: 500,
-      message: error.message,
-    };
-  }
-
-  return {
-    status: 500,
-    message: "Unknown error",
-  };
-}
-
-export async function apiRequest<T = any>(
-  config: AxiosRequestConfig
-): Promise<T> {
-  try {
-    const response: AxiosResponse<T> = await apiClient.request<T>(config);
-    return response.data;
-  } catch (error) {
-    throw mapAxiosError(error);
-  }
-}
-
-export { RAW_BASE_URL as STRAPI_BASE_URL };
+export default axiosInstance;
