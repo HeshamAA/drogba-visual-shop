@@ -16,6 +16,12 @@
       "relation": "oneToOne",
       "target": "api::product.product"
     },
+    "order": {
+      "type": "relation",
+      "relation": "manyToOne",
+      "target": "api::order.order",
+      "inversedBy": "order_products"
+    },
     "name": {
       "type": "string",
       "required": true

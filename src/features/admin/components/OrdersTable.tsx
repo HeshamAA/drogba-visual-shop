@@ -19,22 +19,20 @@ import { Order } from "@/types/strapi";
 
 interface OrdersTableProps {
   orders: Order[];
-  onUpdateStatus: (orderId: number, status: Order["status"]) => void;
+  onUpdateStatus: (orderId: string | number, status: Order["status"]) => void;
   isUpdating?: boolean;
 }
 
 const statusLabels = {
-  pending: "قيد الانتظار",
-  confirmed: "مؤكد",
-  shipped: "تم الشحن",
-  delivered: "تم التسليم",
+  pending: "قيد المراجعة",
+  completed: "مكتمل",
+  cancelled: "ملغي",
 } as const;
 
 const statusColors = {
   pending: "bg-yellow-100 text-yellow-800",
-  confirmed: "bg-blue-100 text-blue-800",
-  shipped: "bg-purple-100 text-purple-800",
-  delivered: "bg-green-100 text-green-800",
+  completed: "bg-green-100 text-green-800",
+  cancelled: "bg-red-100 text-red-800",
 } as const;
 
 export default function OrdersTable({
@@ -78,17 +76,20 @@ export default function OrdersTable({
                 <TableCell>{order.customer_phone ?? order.phone ?? "—"}</TableCell>
                 <TableCell>
                   <div className="space-y-1">
-                    {Array.isArray(order.products) && order.products.length > 0 ? (
-                      order.products.map((item, idx) => (
-                        <div key={idx} className="text-sm">
-                          {item?.name || item?.productName || "منتج"}{" "}
-                          {item?.size ? `(${item.size})` : ""} x
-                          {item?.quantity ?? 0}
-                        </div>
-                      ))
-                    ) : (
-                      <div className="text-sm">لا توجد منتجات</div>
-                    )}
+                    {(() => {
+                      const products = order.order_products || order.products || [];
+                      return Array.isArray(products) && products.length > 0 ? (
+                        products.map((item: any, idx: number) => (
+                          <div key={idx} className="text-sm">
+                            {item?.name || item?.productName || "منتج"}{" "}
+                            {item?.size ? `(${item.size})` : ""} x
+                            {item?.quantity ?? 0}
+                          </div>
+                        ))
+                      ) : (
+                        <div className="text-sm text-muted-foreground">لا توجد منتجات</div>
+                      );
+                    })()}
                   </div>
                 </TableCell>
                 <TableCell className="font-semibold">
@@ -96,41 +97,33 @@ export default function OrdersTable({
                 </TableCell>
                 <TableCell>
                   <Select
-                    value={order.status ?? "pending"}
+                    value={order.status ?? order.order_status ?? "pending"}
                     onValueChange={(value) => {
-                      if (order.id === undefined) return;
-                      const numericId =
-                        typeof order.id === "number"
-                          ? order.id
-                          : Number(order.id);
-                      if (Number.isNaN(numericId)) {
-                        return;
-                      }
-                      onUpdateStatus(numericId, value as Order["status"]);
+                      const orderId = order.documentId || order.id;
+                      if (!orderId) return;
+                      onUpdateStatus(orderId as any, value as Order["status"]);
                     }}
-                    disabled={
-                      isUpdating || order.id === undefined || order.id === null
-                    }
+                    disabled={isUpdating || (!order.documentId && !order.id)}
                   >
                     <SelectTrigger className="w-[140px]">
                       <SelectValue>
                         <Badge
                           className={
-                            statusColors[(order.status ?? "pending") as keyof typeof statusColors] ??
+                            statusColors[(order.status ?? order.order_status ?? "pending") as keyof typeof statusColors] ??
                             "bg-gray-100 text-gray-800"
                           }
                         >
-                          {statusLabels[(order.status ?? "pending") as keyof typeof statusLabels] ||
+                          {statusLabels[(order.status ?? order.order_status ?? "pending") as keyof typeof statusLabels] ||
                             order.status ||
+                            order.order_status ||
                             "—"}
                         </Badge>
                       </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="pending">قيد الانتظار</SelectItem>
-                      <SelectItem value="confirmed">مؤكد</SelectItem>
-                      <SelectItem value="shipped">تم الشحن</SelectItem>
-                      <SelectItem value="delivered">تم التسليم</SelectItem>
+                      <SelectItem value="pending">قيد المراجعة</SelectItem>
+                      <SelectItem value="completed">مكتمل</SelectItem>
+                      <SelectItem value="cancelled">ملغي</SelectItem>
                     </SelectContent>
                   </Select>
                 </TableCell>

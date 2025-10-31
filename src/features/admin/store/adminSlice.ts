@@ -103,7 +103,7 @@ export const updateAdminOrderStatus = createAsyncThunk<
   { rejectValue: string }
 >("admin/updateOrderStatus", async ({ id, status }, { rejectWithValue }) => {
   try {
-    await updateOrder(id, { status: status ?? "pending" });
+    await updateOrder(id, { order_status: status ?? "pending" });
     return { id, status };
   } catch (error) {
     return rejectWithValue(mapErrorToMessage(error));
@@ -206,11 +206,13 @@ const adminSlice = createSlice({
       })
       .addCase(updateAdminOrderStatus.fulfilled, (state, action) => {
         state.loading = false;
-        state.orders = state.orders.map((order) =>
-          String(order.id) === String(action.payload.id)
-            ? { ...order, status: action.payload.status }
-            : order
-        );
+        state.orders = state.orders.map((order) => {
+          const orderId = order.documentId || order.id;
+          const payloadId = action.payload.id;
+          return String(orderId) === String(payloadId)
+            ? { ...order, status: action.payload.status, order_status: action.payload.status }
+            : order;
+        });
       })
       .addCase(updateAdminOrderStatus.rejected, (state, action) => {
         state.loading = false;

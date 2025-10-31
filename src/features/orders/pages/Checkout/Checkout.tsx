@@ -58,7 +58,7 @@ export default function Checkout() {
     const shippingCost = paymentMethod === "cash" ? SHIPPING_FEE : 0;
     const orderData = {
       customer_name: formData.name,
-      customer_phone: formData.phone,
+      customer_phone: parseInt(formData.phone, 10),
       address: formData.address,
       products: items.map((item) => ({
         productId: item.productId,
@@ -72,17 +72,19 @@ export default function Checkout() {
     };
 
     // Submit order to Strapi
-    const success = await submitOrder(orderData);
+    const order = await submitOrder(orderData);
+    console.log("Order result:", order);
 
-    if (success) {
+    if (order) {
+      const orderId = (order as any).documentId || order.id;
+      console.log("Order ID:", orderId);
       toast.success("تم تأكيد طلبك بنجاح!");
-      clearCart();
-      if (paymentMethod === "vodafone cash") {
-        navigate("/order-tracking");
-      } else {
-        navigate("/thank-you");
-      }
+      // Navigate first before clearing cart to avoid redirect to /cart
+      navigate(`/order-tracking/${orderId}`);
+      // Clear cart after a small delay to ensure navigation happens first
+      setTimeout(() => clearCart(), 100);
     } else {
+      console.log("No order returned");
       toast.error(error || "حدث خطأ أثناء تأكيد الطلب");
     }
   };

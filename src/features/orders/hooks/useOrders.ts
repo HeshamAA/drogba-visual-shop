@@ -78,7 +78,7 @@
   };
 
   interface UseOrderSubmissionReturn {
-    submitOrder: (orderData: CreateOrderData) => Promise<boolean>;
+    submitOrder: (orderData: CreateOrderData) => Promise<Order | null>;
     loading: boolean;
     error: string | null;
     success: boolean;
@@ -96,11 +96,11 @@
     const success = useAppSelector(selectOrderSuccess);
 
     const submitOrder = useCallback(
-      async (orderData: CreateOrderData): Promise<boolean> => {
+      async (orderData: CreateOrderData): Promise<Order | null> => {
         const payload = toOrderPayload(orderData);
         console.log(payload);
         const result = await dispatch(submitOrderThunk(payload)).unwrap();
-        return Boolean(result);
+        return result;
       },
       [dispatch]
     );

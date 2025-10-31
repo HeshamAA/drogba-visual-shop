@@ -8,6 +8,7 @@ import ProductDetail from "@/features/products/pages/ProductDetail";
 import Cart from "@/features/cart/pages/Cart";
 import Checkout from "@/features/orders/pages/Checkout/Checkout";
 import ThankYou from "@/features/orders/pages/ThankYou/ThankYou";
+import OrderTracking from "@/features/orders/pages/OrderTracking";
 import NotFound from "@/shared/components/NotFound";
 
 const PublicLayout = () => (
@@ -26,6 +27,8 @@ export const PublicRoutes = () => (
     <Route path="cart" element={<Cart />} />
     <Route path="checkout" element={<Checkout />} />
     <Route path="thank-you" element={<ThankYou />} />
+    <Route path="order-tracking" element={<OrderTracking />} />
+    <Route path="order-tracking/:orderId" element={<OrderTracking />} />
   </Route>
 );
 

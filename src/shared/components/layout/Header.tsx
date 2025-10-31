@@ -1,9 +1,10 @@
 import { Link } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { ShoppingCart, Globe, Moon, Sun, Menu, X } from "lucide-react";
+import { ShoppingCart, Globe, Moon, Sun, Menu, X, Settings, Package } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { useCart } from "@/features/cart";
 import { useState, useEffect } from "react";
+import { useAppSelector } from "@/app/hooks";
 import {
   Sheet,
   SheetContent,
@@ -18,6 +19,14 @@ export default function Header() {
   const { totalItems } = useCart();
   const [theme, setTheme] = useState<"light" | "dark">("light");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  
+  // Check if user is admin (check localStorage for admin token)
+  const [isAdmin, setIsAdmin] = useState(false);
+  
+  useEffect(() => {
+    const adminToken = loadString("admin-token");
+    setIsAdmin(!!adminToken);
+  }, []);
 
   useEffect(() => {
     const savedTheme = (loadString("drogba-theme", "light") as "light" | "dark") || "light";
@@ -67,6 +76,22 @@ export default function Header() {
                 >
                   {t("nav.shop")}
                 </Link>
+                <Link
+                  to="/order-tracking"
+                  className="text-lg font-medium hover:text-accent transition-colors py-2"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  تتبع الطلب
+                </Link>
+                {isAdmin && (
+                  <Link
+                    to="/admin"
+                    className="text-lg font-medium hover:text-accent transition-colors py-2"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    لوحة التحكم
+                  </Link>
+                )}
                 <div className="border-t border-border mt-4 pt-4 flex items-center gap-2">
                   <Button variant="ghost" size="icon" onClick={toggleLanguage}>
                     <Globe className="h-5 w-5" />
@@ -135,6 +160,24 @@ export default function Header() {
             )}
             <span className="sr-only">Toggle theme</span>
           </Button>
+
+          {/* Order Tracking Link */}
+          <Link to="/order-tracking">
+            <Button variant="ghost" size="icon" title="تتبع الطلب">
+              <Package className="h-5 w-5" />
+              <span className="sr-only">Order Tracking</span>
+            </Button>
+          </Link>
+
+          {/* Admin Dashboard Link (only for admins) */}
+          {isAdmin && (
+            <Link to="/admin">
+              <Button variant="ghost" size="icon" title="لوحة التحكم">
+                <Settings className="h-5 w-5" />
+                <span className="sr-only">Admin Dashboard</span>
+              </Button>
+            </Link>
+          )}
 
           <Link to="/cart">
             <Button variant="ghost" size="icon" className="relative">

@@ -96,41 +96,27 @@ function AdminOrdersContent() {
 
       <main className="container mx-auto px-4 py-8">
         {/* Statistics Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 mb-6">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           <div className="bg-card rounded-lg p-4 border">
             <p className="text-sm text-muted-foreground mb-1">إجمالي الطلبات</p>
             <p className="text-2xl font-bold">{stats.total}</p>
           </div>
           <div className="bg-card rounded-lg p-4 border border-yellow-500/20">
-            <p className="text-sm text-muted-foreground mb-1">قيد الانتظار</p>
+            <p className="text-sm text-muted-foreground mb-1">قيد المراجعة</p>
             <p className="text-2xl font-bold text-yellow-600">
               {stats.pending}
             </p>
           </div>
-          <div className="bg-card rounded-lg p-4 border border-blue-500/20">
-            <p className="text-sm text-muted-foreground mb-1">مؤكد</p>
-            <p className="text-2xl font-bold text-blue-600">
-              {stats.confirmed}
-            </p>
-          </div>
-          <div className="bg-card rounded-lg p-4 border border-purple-500/20">
-            <p className="text-sm text-muted-foreground mb-1">تم الشحن</p>
-            <p className="text-2xl font-bold text-purple-600">
-              {stats.shipped}
-            </p>
-          </div>
           <div className="bg-card rounded-lg p-4 border border-green-500/20">
-            <p className="text-sm text-muted-foreground mb-1">تم التسليم</p>
+            <p className="text-sm text-muted-foreground mb-1">مكتمل</p>
             <p className="text-2xl font-bold text-green-600">
-              {stats.delivered}
+              {stats.completed}
             </p>
           </div>
-          <div className="bg-card rounded-lg p-4 border border-primary/20">
-            <p className="text-sm text-muted-foreground mb-1">
-              إجمالي المبيعات
-            </p>
-            <p className="text-2xl font-bold text-primary">
-              {stats.totalRevenue} ج.م
+          <div className="bg-card rounded-lg p-4 border border-red-500/20">
+            <p className="text-sm text-muted-foreground mb-1">ملغي</p>
+            <p className="text-2xl font-bold text-red-600">
+              {stats.cancelled}
             </p>
           </div>
         </div>
@@ -150,10 +136,9 @@ function AdminOrdersContent() {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">الكل</SelectItem>
-                  <SelectItem value="pending">قيد الانتظار</SelectItem>
-                  <SelectItem value="confirmed">مؤكد</SelectItem>
-                  <SelectItem value="shipped">تم الشحن</SelectItem>
-                  <SelectItem value="delivered">تم التسليم</SelectItem>
+                  <SelectItem value="pending">قيد المراجعة</SelectItem>
+                  <SelectItem value="completed">مكتمل</SelectItem>
+                  <SelectItem value="cancelled">ملغي</SelectItem>
                 </SelectContent>
               </Select>
             </div>

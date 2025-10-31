@@ -9,6 +9,7 @@ import {
   TrendingUp,
   LogOut,
   TicketPercent,
+  Home,
 } from "lucide-react";
 import { useAdminDashboard } from "@/features/admin/hooks/useAdminDashboard";
 
@@ -38,6 +39,12 @@ function AdminDashboardContent() {
         <div className="container mx-auto px-4 py-4 flex justify-between items-center">
           <h1 className="text-2xl font-bold">لوحة تحكم الإدمن</h1>
           <div className="flex items-center gap-2">
+            <Button variant="outline" asChild>
+              <Link to="/">
+                <Home className="w-4 h-4 ml-2" />
+                الصفحة الرئيسية
+              </Link>
+            </Button>
             <ThemeToggle />
             <Button variant="outline" onClick={handleLogout}>
               <LogOut className="w-4 h-4 ml-2" />

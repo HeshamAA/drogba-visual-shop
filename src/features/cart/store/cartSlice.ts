@@ -33,7 +33,9 @@ const cartSlice = createSlice({
       if (existingIndex > -1) {
         const updated = state.items[existingIndex];
         updated.quantity += action.payload.quantity;
+       
       } else {
+     
         state.items.push(action.payload);
       }
       saveItems(state.items);
