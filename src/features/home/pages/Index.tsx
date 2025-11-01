@@ -7,18 +7,16 @@ import ValueProposition from "@/features/home/components/ValueProposition";
 import BrandStory from "@/features/home/components/BrandStory";
 import CommunitySocialProof from "@/features/home/components/CommunitySocialProof";
 import Newsletter from "@/features/home/components/Newsletter";
-import { useFeaturedProducts, useProducts } from "@/features/products/hooks/useProducts";
-import { useMemo } from "react";
+import { useHomePage } from "@/features/home/hooks/useHomePage";
+import { HomeSEO } from "@/shared/components/SEO";
 
 export default function Index() {
-  const { featuredProducts } = useFeaturedProducts();
-  const { products } = useProducts({ pageSize: 12 });
-
-
-  const newArrivals = useMemo(() => products.slice(0, 4), [products]);
+  const { featuredProducts, newArrivals } = useHomePage();
 
   return (
-    <div className="min-h-screen bg-app">
+    <>
+      <HomeSEO />
+      <div className="min-h-screen bg-app">
       <HeroSection
       
 
@@ -39,6 +37,7 @@ export default function Index() {
       <CommunitySocialProof />
 
       <Newsletter />
-    </div>
+      </div>
+    </>
   );
 }

@@ -1,2 +1,2 @@
 // Re-export all cart types
-export * from './cart.types';
+export * from './cart';

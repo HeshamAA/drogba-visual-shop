@@ -1,94 +1,36 @@
-import { useTranslation } from "react-i18next";
-import { useProducts } from "../hooks/useProducts";
-import { useCategories } from "../hooks/useCategories";
 import ProductCard from "../components/ProductCard";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { Alert, AlertDescription } from "@/shared/components/ui/alert";
 import { AlertCircle, RefreshCw, SlidersHorizontal, X, Sparkles } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select";
-import { useState, useMemo } from "react";
-import type { Product, CategorySummary } from "@/types/strapi";
+import type { CategorySummary } from "@/types/strapi";
 import { motion, AnimatePresence } from "framer-motion";
+import { useProductsPage } from "../hooks/useProductsPage";
+import { ProductsSEO } from "@/shared/components/SEO";
 
 export default function Products() {
-  const { t } = useTranslation();
-  const [page, setPage] = useState(1);
-  const [sortBy, setSortBy] = useState('newest');
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
-  const [priceRange, setPriceRange] = useState({ min: 0, max: 1000 });
-  const [showFilters, setShowFilters] = useState(false);
-
-  const { 
-    products = [], 
-    isLoading, 
+  const {
+    products,
+    filteredProducts,
+    categories,
+    isLoading,
+    isCategoriesLoading,
     error,
-  } = useProducts({
     page,
-    pageSize: 12,
-    filters: {
-      ...(selectedCategory && { category: selectedCategory }),
-      minPrice: priceRange.min,
-      maxPrice: priceRange.max,
-    },
-    sort: sortBy === 'newest' 
-      ? 'createdAt:desc' 
-      : sortBy === 'price-asc' 
-        ? 'price:asc' 
-        : sortBy === 'price-desc' 
-          ? 'price:desc' 
-          : 'name:asc',
-  });
-
-  const { categories = [], loading: isCategoriesLoading } = useCategories();
-
-  const translateCategoryName = (
-    slugValue?: string | null,
-    fallback?: string
-  ) => {
-    if (!slugValue) {
-      return fallback ?? "";
-    }
-    const normalizedSlug = slugValue.toString().toLowerCase();
-    const defaultText = fallback ?? slugValue;
-    return t(`categoryNames.${normalizedSlug}`, { defaultValue: defaultText });
-  };
-  
-  const filteredProducts = useMemo(() => {
-    return products.filter((product: Product) => {
-      const productData = product.attributes ?? product;
-
-      const categoryMatches = !selectedCategory
-        || productData.category?.slug === selectedCategory
-        || productData.categories?.data?.some((cat) => cat.attributes.slug === selectedCategory);
-
-      const price = productData.price ?? 0;
-      const matchesPrice = price >= priceRange.min && price <= priceRange.max;
-
-      return categoryMatches && matchesPrice;
-    });
-  }, [products, selectedCategory, priceRange]);
-
-  const handleCategoryChange = (category: string) => {
-    setSelectedCategory(category);
-    setPage(1);
-  };
-
-  const handlePriceChange = (min: number, max: number) => {
-    setPriceRange({ min, max });
-    setPage(1);
-  };
-
-  const clearFilters = () => {
-    setSelectedCategory('');
-    setPriceRange({ min: 0, max: 1000 });
-    setPage(1);
-  };
-
-  const activeFiltersCount = [
-    selectedCategory ? 1 : 0,
-    priceRange.min > 0 || priceRange.max < 1000 ? 1 : 0,
-  ].reduce((sum, count) => sum + count, 0);
+    sortBy,
+    setSortBy,
+    selectedCategory,
+    priceRange,
+    showFilters,
+    setShowFilters,
+    activeFiltersCount,
+    handleCategoryChange,
+    handlePriceChange,
+    clearFilters,
+    translateCategoryName,
+    t,
+  } = useProductsPage();
 
   // Loading state
   if (isLoading && page === 1) {
@@ -150,7 +92,9 @@ export default function Products() {
   }
 
   return (
-    <div className="min-h-screen">
+    <>
+      <ProductsSEO />
+      <div className="min-h-screen">
       {/* Hero Header with Gradient Background */}
       <div className="relative overflow-hidden" style={{ background: 'var(--hero-gradient)' }}>
         <div className="absolute inset-0 opacity-30">
@@ -216,7 +160,7 @@ export default function Products() {
                       {translateCategoryName(selectedCategory, selectedCategory)}
                     </span>
                     <button
-                      onClick={() => setSelectedCategory('')}
+                      onClick={() => handleCategoryChange('')}
                       className="hover:bg-accent/20 rounded-full p-0.5 transition-colors"
                     >
                       <X className="h-3 w-3" />
@@ -234,7 +178,7 @@ export default function Products() {
                       ${priceRange.min} - ${priceRange.max}
                     </span>
                     <button
-                      onClick={() => setPriceRange({ min: 0, max: 1000 })}
+                      onClick={() => handlePriceChange(0, 1000)}
                       className="hover:bg-accent/20 rounded-full p-0.5 transition-colors"
                     >
                       <X className="h-3 w-3" />
@@ -517,6 +461,7 @@ export default function Products() {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }

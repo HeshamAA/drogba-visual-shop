@@ -1,36 +1,42 @@
-import { useTranslation } from "react-i18next";
-import { useCart } from "@/features/cart";
 import { Button } from "@/shared/components/ui/button";
 import { Link } from "react-router-dom";
 import { Minus, Plus, Trash2, ShoppingBag } from "lucide-react";
 import { getImageUrl } from "@/lib/strapi";
+import { useCartPage } from "@/features/cart/hooks/useCartPage";
+import { CartSEO } from "@/shared/components/SEO";
 
 export default function Cart() {
-  const { t } = useTranslation();
   const {
     items,
-    removeItem,
-    incrementItem,
-    decrementItem,
     totalPrice,
     shippingFee,
     payableTotal,
-  } = useCart();
+    isEmpty,
+    removeItem,
+    incrementItem,
+    decrementItem,
+    t,
+  } = useCartPage();
 
-  if (items.length === 0) {
+  if (isEmpty) {
     return (
-      <div className="container mx-auto px-4 py-16 text-center">
+      <>
+        <CartSEO />
+        <div className="container mx-auto px-4 py-16 text-center">
         <ShoppingBag className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
         <h2 className="text-2xl font-bold mb-4">{t("cart.empty")}</h2>
         <Link to="/products">
           <Button variant="gradient">{t("cart.continueShopping")}</Button>
         </Link>
-      </div>
+        </div>
+      </>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-16">
+    <>
+      <CartSEO />
+      <div className="container mx-auto px-4 py-16">
       <h1 className="text-3xl font-bold mb-8">{t("cart.title")}</h1>
 
       <div className="grid lg:grid-cols-3 gap-8">
@@ -139,6 +145,7 @@ export default function Cart() {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }

@@ -72,8 +72,8 @@ export default function ProductForm({
 
       // Set gallery images if product has them
       if (product.gallery_images && Array.isArray(product.gallery_images)) {
-        const gallery = product.gallery_images.map((img: any) => ({
-          id: img.id,
+        const gallery = product.gallery_images.map((img: { id: number | string; url: string }) => ({
+          id: typeof img.id === 'string' ? parseInt(img.id, 10) : img.id,
           url: getImageUrl(img.url),
         }));
         setGalleryImages(gallery);
@@ -173,14 +173,15 @@ export default function ProductForm({
       }));
 
       toast.success("تم رفع الصورة بنجاح");
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error uploading image:", error);
       
+      const err = error as { response?: { status?: number }; message?: string };
       // Check if it's an authentication error
-      if (error.response?.status === 401 || error.response?.status === 403) {
+      if (err.response?.status === 401 || err.response?.status === 403) {
         toast.error("يجب تسجيل الدخول كـ Admin لرفع الصور");
       } else {
-        toast.error("فشل في رفع الصورة: " + (error.message || "حدث خطأ"));
+        toast.error("فشل في رفع الصورة: " + (err.message || "حدث خطأ"));
       }
       
       // Reset preview on error
@@ -229,13 +230,14 @@ export default function ProductForm({
       
       // Reset file input
       e.target.value = "";
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error uploading gallery image:", error);
       
-      if (error.response?.status === 401 || error.response?.status === 403) {
+      const err = error as { response?: { status?: number }; message?: string };
+      if (err.response?.status === 401 || err.response?.status === 403) {
         toast.error("يجب تسجيل الدخول كـ Admin لرفع الصور");
       } else {
-        toast.error("فشل في رفع الصورة: " + (error.message || "حدث خطأ"));
+        toast.error("فشل في رفع الصورة: " + (err.message || "حدث خطأ"));
       }
     } finally {
       setUploadingGallery(false);
@@ -301,7 +303,7 @@ export default function ProductForm({
     onSave(productData);
   };
 
-  const updateField = (field: keyof Partial<Product>, value: any) => {
+  const updateField = (field: keyof Partial<Product>, value: unknown) => {
     setFormData({
       ...formData,
       [field]: value,

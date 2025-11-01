@@ -1,93 +1,32 @@
-import { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useTranslation } from "react-i18next";
-import { useCart, CASH_ON_DELIVERY_SHIPPING_FEE } from "@/features/cart";
-import { useOrderSubmission } from "@/features/orders/hooks/useOrders";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import toast from "react-hot-toast";
 import { Copy, Loader2 } from "lucide-react";
-import type { PaymentMethod } from "@/types/strapi";
-const VODAFONE_CASH_NUMBER = "01001234567";
-const SHIPPING_FEE = CASH_ON_DELIVERY_SHIPPING_FEE;
+import { useCheckoutPage } from "@/features/orders/hooks/useCheckoutPage";
+import { CheckoutSEO } from "@/shared/components/SEO";
 
 export default function Checkout() {
-  const { t } = useTranslation();
-  const navigate = useNavigate();
-  const { items, totalPrice, clearCart } = useCart();
-  const { submitOrder, loading, error } = useOrderSubmission();
-
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cash");
-  const [isVodafonePaid, setIsVodafonePaid] = useState(false);
-  const [showVodafoneConfirmation, setShowVodafoneConfirmation] = useState(false);
-  const [formData, setFormData] = useState({
-    name: "",
-    phone: "",
-    address: "",
-  });
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    // Detailed validation with specific error messages
-    if (!formData.name || formData.name.trim().length < 2) {
-      toast.error("الاسم يجب أن يكون أكثر من حرفين");
-      return;
-    }
-
-    if (!formData.phone || formData.phone.trim().length < 10) {
-      toast.error("رقم الهاتف غير صحيح");
-      return;
-    }
-
-    if (!formData.address || formData.address.trim().length < 10) {
-      toast.error("العنوان يجب أن يكون تفصيلياً");
-      return;
-    }
-
-    // Validate phone format (numbers only)
-    const phoneRegex = /^[0-9+\-\s]+$/;
-    if (!phoneRegex.test(formData.phone)) {
-      toast.error("رقم الهاتف يجب أن يحتوي على أرقام فقط");
-      return;
-    }
-
-    // Prepare order data
-    const shippingCost = paymentMethod === "cash" ? SHIPPING_FEE : 0;
-    const orderData = {
-      customer_name: formData.name,
-      customer_phone: parseInt(formData.phone, 10),
-      address: formData.address,
-      products: items.map((item) => ({
-        productId: item.productId,
-        name: item.name,
-        size: item.size,
-        quantity: item.quantity,
-        price: item.price,
-      })),
-      total_price: totalPrice + shippingCost,
-      payment_method: paymentMethod,
-    };
-
-    // Submit order to Strapi
-    const order = await submitOrder(orderData);
-    console.log("Order result:", order);
-
-    if (order) {
-      const orderId = (order as any).documentId || order.id;
-      console.log("Order ID:", orderId);
-      toast.success("تم تأكيد طلبك بنجاح!");
-      // Navigate first before clearing cart to avoid redirect to /cart
-      navigate(`/order-tracking/${orderId}`);
-      // Clear cart after a small delay to ensure navigation happens first
-      setTimeout(() => clearCart(), 100);
-    } else {
-      console.log("No order returned");
-      toast.error(error || "حدث خطأ أثناء تأكيد الطلب");
-    }
-  };
+  const {
+    items,
+    totalPrice,
+    shippingCost,
+    finalTotal,
+    loading,
+    formData,
+    paymentMethod,
+    isVodafonePaid,
+    showVodafoneConfirmation,
+    VODAFONE_CASH_NUMBER,
+    SHIPPING_FEE,
+    handleFormChange,
+    handlePaymentMethodChange,
+    handleVodafonePaid,
+    copyVodafoneNumber,
+    handleSubmit,
+    t,
+    navigate,
+  } = useCheckoutPage();
 
   if (items.length === 0) {
     navigate("/cart");
@@ -95,7 +34,9 @@ export default function Checkout() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-16">
+    <>
+      <CheckoutSEO />
+      <div className="container mx-auto px-4 py-16">
       <h1 className="text-3xl font-bold mb-8">{t("checkout.title")}</h1>
 
       <div className="grid lg:grid-cols-3 gap-8">
@@ -112,9 +53,7 @@ export default function Checkout() {
                 <Input
                   id="name"
                   value={formData.name}
-                  onChange={(e) =>
-                    setFormData({ ...formData, name: e.target.value })
-                  }
+                  onChange={(e) => handleFormChange("name", e.target.value)}
                   required
                 />
               </div>
@@ -125,9 +64,7 @@ export default function Checkout() {
                   id="phone"
                   type="tel"
                   value={formData.phone}
-                  onChange={(e) =>
-                    setFormData({ ...formData, phone: e.target.value })
-                  }
+                  onChange={(e) => handleFormChange("phone", e.target.value)}
                   required
                 />
               </div>
@@ -137,9 +74,7 @@ export default function Checkout() {
                 <Input
                   id="address"
                   value={formData.address}
-                  onChange={(e) =>
-                    setFormData({ ...formData, address: e.target.value })
-                  }
+                  onChange={(e) => handleFormChange("address", e.target.value)}
                   required
                 />
               </div>
@@ -153,14 +88,7 @@ export default function Checkout() {
 
             <RadioGroup
               value={paymentMethod}
-              onValueChange={(value) => {
-                const nextMethod = value as PaymentMethod;
-                setPaymentMethod(nextMethod);
-                if (nextMethod !== "vodafone cash") {
-                  setIsVodafonePaid(false);
-                  setShowVodafoneConfirmation(false);
-                }
-              }}
+              onValueChange={handlePaymentMethodChange}
             >
               <div className="flex flex-col gap-4">
                 <div className="flex items-center space-x-2 space-x-reverse">
@@ -196,12 +124,7 @@ export default function Checkout() {
                     type="button"
                     variant="outline"
                     size="icon"
-                    onClick={() => {
-                      navigator.clipboard
-                        .writeText(VODAFONE_CASH_NUMBER)
-                        .then(() => toast.success("تم نسخ الرقم"))
-                        .catch(() => toast.error("تعذر نسخ الرقم"));
-                    }}
+                    onClick={copyVodafoneNumber}
                     aria-label="Copy Vodafone Cash Number"
                   >
                     <Copy className="h-4 w-4" />
@@ -212,11 +135,7 @@ export default function Checkout() {
                   type="button"
                   variant="secondary"
                   className="w-full"
-                  onClick={() => {
-                    setIsVodafonePaid(true);
-                    setShowVodafoneConfirmation(true);
-                    toast.success("تم استلام تأكيد الدفع");
-                  }}
+                  onClick={handleVodafonePaid}
                 >
                   تم الدفع
                 </Button>
@@ -281,14 +200,14 @@ export default function Checkout() {
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">الشحن</span>
                 <span className="font-semibold">
-                  {paymentMethod === "cash" ? SHIPPING_FEE : 0} {t("product.price")}
+                  {shippingCost} {t("product.price")}
                 </span>
               </div>
               <div className="border-t pt-2">
                 <div className="flex justify-between text-lg font-bold">
                   <span>{t("cart.total")}</span>
                   <span>
-                    {totalPrice + (paymentMethod === "cash" ? SHIPPING_FEE : 0)} {t("product.price")}
+                    {finalTotal} {t("product.price")}
                   </span>
                 </div>
               </div>
@@ -296,6 +215,7 @@ export default function Checkout() {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }

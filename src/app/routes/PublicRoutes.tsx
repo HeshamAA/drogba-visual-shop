@@ -1,20 +1,26 @@
+import { lazy, Suspense } from "react";
 import { Outlet, Route } from "react-router-dom";
 
 import Header from "@/shared/components/layout/Header";
 import Footer from "@/shared/components/layout/Footer";
-import Index from "@/features/home/pages/Index";
-import Products from "@/features/products/pages/Products";
-import ProductDetail from "@/features/products/pages/ProductDetail";
-import Cart from "@/features/cart/pages/Cart";
-import Checkout from "@/features/orders/pages/Checkout/Checkout";
-import ThankYou from "@/features/orders/pages/ThankYou/ThankYou";
-import OrderTracking from "@/features/orders/pages/OrderTracking";
-import NotFound from "@/shared/components/NotFound";
+import PageLoader from "@/shared/components/PageLoader";
+
+// Lazy load pages for better performance
+const Index = lazy(() => import("@/features/home/pages/Index"));
+const Products = lazy(() => import("@/features/products/pages/Products"));
+const ProductDetail = lazy(() => import("@/features/products/pages/ProductDetail"));
+const Cart = lazy(() => import("@/features/cart/pages/Cart"));
+const Checkout = lazy(() => import("@/features/orders/pages/Checkout/Checkout"));
+const ThankYou = lazy(() => import("@/features/orders/pages/ThankYou/ThankYou"));
+const OrderTracking = lazy(() => import("@/features/orders/pages/OrderTracking"));
+const NotFound = lazy(() => import("@/shared/components/NotFound"));
 
 const PublicLayout = () => (
   <>
     <Header />
-    <Outlet />
+    <Suspense fallback={<PageLoader />}>
+      <Outlet />
+    </Suspense>
     <Footer />
   </>
 );
@@ -35,7 +41,9 @@ export const PublicRoutes = () => (
 const NotFoundLayout = () => (
   <>
     <Header />
-    <NotFound />
+    <Suspense fallback={<PageLoader />}>
+      <NotFound />
+    </Suspense>
     <Footer />
   </>
 );

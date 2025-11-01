@@ -1,6 +1,4 @@
-import { useMemo, useState } from "react";
-import { useParams, Navigate } from "react-router-dom";
-import { useTranslation } from "react-i18next";
+import { Navigate } from "react-router-dom";
 import { Button } from "@/shared/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/shared/components/ui/radio-group";
 import { Label } from "@/shared/components/ui/label";
@@ -11,69 +9,30 @@ import {
   AccordionTrigger,
 } from "@/shared/components/ui/accordion";
 import { Minus, Plus, Shield, RotateCcw } from "lucide-react";
-import { useCart } from "@/features/cart";
-import toast from "react-hot-toast";
-import { useProductBySlug } from "@/features/products/hooks/useProducts";
-import type { ProductAttributes, ProductSize } from "@/types/strapi";
-import { getImageUrl } from "@/lib/strapi";
+import type { ProductSize } from "@/types/strapi";
+import { useProductDetail } from "@/features/products/hooks/useProductDetail";
+import { SEO } from "@/shared/components/SEO";
 
 export default function ProductDetail() {
-  const { slug } = useParams();
-  const { t } = useTranslation();
-  const { addItem } = useCart();
-  const { product, isLoading, error } = useProductBySlug(slug || "");
-
-  const [selectedSize, setSelectedSize] = useState("");
-  const [selectedColor, setSelectedColor] = useState("");
-  const [quantity, setQuantity] = useState(1);
-  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
-
-  const productData: ProductAttributes = (product as any)?.attributes
-    ? (product as any).attributes
-    : (product as unknown as ProductAttributes);
-
-  const resolveImageUrl = (source?: any): string => {
-    if (!source) return "";
-    
-    // Try to get the original/largest image first
-    const urlCandidate =
-      source?.url ?? // Original image URL (highest quality)
-      source?.data?.attributes?.url ?? // Strapi v4 format
-      source?.formats?.xlarge?.url ?? // Extra large
-      source?.formats?.large?.url ?? // Large
-      source?.formats?.medium?.url ?? // Medium
-      source?.formats?.small?.url ?? // Small
-      source?.formats?.thumbnail?.url ?? // Thumbnail (last resort)
-      "";
-    return urlCandidate ? getImageUrl(urlCandidate) : "";
-  };
-
-  const allImages: string[] = useMemo(() => {
-    if (!product) return [];
-    
-    const images: string[] = [];
-
-    // Add main image first
-    const mainImg = resolveImageUrl(productData.main_image) || resolveImageUrl(productData.product_images);
-    if (mainImg) {
-      images.push(mainImg);
-    }
-
-    // Add gallery images
-    // Check if gallery_images is directly an array or has .data property
-    const galleryItems = Array.isArray(productData.gallery_images) 
-      ? productData.gallery_images 
-      : (productData.gallery_images?.data ?? []);
-    
-    galleryItems.forEach((item: any) => {
-      const url = resolveImageUrl(item?.attributes ?? item);
-      if (url && url !== mainImg) {
-        images.push(url);
-      }
-    });
-
-    return images;
-  }, [product, productData]);
+  const {
+    product,
+    productData,
+    isLoading,
+    error,
+    allImages,
+    mainImage,
+    selectedImageIndex,
+    setSelectedImageIndex,
+    selectedSize,
+    setSelectedSize,
+    selectedColor,
+    setSelectedColor,
+    quantity,
+    incrementQuantity,
+    decrementQuantity,
+    handleAddToCart,
+    t,
+  } = useProductDetail();
 
   // Early returns AFTER all hooks
   if (isLoading) {
@@ -88,35 +47,19 @@ export default function ProductDetail() {
     return <Navigate to="/products" replace />;
   }
 
-  const mainImage = allImages[0] ?? "";
-
-  const handleAddToCart = () => {
-    if (!selectedSize) {
-      toast.error(t("product.selectSize"));
-      return;
-    }
-
-    if (!selectedColor) {
-      toast.error("يرجى اختيار اللون");
-      return;
-    }
-
-    addItem({
-      id: `${product.id}_${selectedSize}_${selectedColor}`,
-      productId: Number(product.id),
-      name: productData.name ?? "",
-      image: mainImage || "",
-      price: productData.price ?? 0,
-      size: selectedSize,
-      color: selectedColor,
-      quantity,
-    });
-
-    toast.success(`${productData.name ?? ""} ${t("product.addToCart")}`);
-  };
-
   return (
-    <div className="container mx-auto px-4 py-8">
+    <>
+      <SEO
+        title={productData.name}
+        description={productData.description?.replace(/<[^>]*>/g, '').substring(0, 160) || `اشتري ${productData.name} بأفضل سعر من متجر دروجبا`}
+        keywords={`${productData.name}, ملابس رياضية, ${productData.category?.name || ''}`}
+        image={mainImage}
+        type="product"
+        price={productData.price}
+        availability={productData.inStock !== false ? 'in stock' : 'out of stock'}
+        url={`https://drogba-shop.com/products/${product.id}`}
+      />
+      <div className="container mx-auto px-4 py-8">
       <div className="grid md:grid-cols-2 gap-8 lg:gap-12">
         {/* Gallery - Sticky on Desktop */}
         <div className="md:sticky md:top-24 md:self-start space-y-4">
@@ -264,7 +207,7 @@ export default function ProductDetail() {
               <Button
                 variant="outline"
                 size="icon"
-                onClick={() => setQuantity(Math.max(1, quantity - 1))}
+                onClick={decrementQuantity}
               >
                 <Minus className="h-4 w-4" />
               </Button>
@@ -274,7 +217,7 @@ export default function ProductDetail() {
               <Button
                 variant="outline"
                 size="icon"
-                onClick={() => setQuantity(quantity + 1)}
+                onClick={incrementQuantity}
               >
                 <Plus className="h-4 w-4" />
               </Button>
@@ -344,6 +287,7 @@ export default function ProductDetail() {
           </Accordion>
         </div>
       </div>
-    </div>
+      </div>
+    </>
   );
 }
